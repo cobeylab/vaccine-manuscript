@@ -1,0 +1,68 @@
+{
+  "burnin": 0,
+  "endDay": 7300,
+  "deltaT": 0.1,
+  "printStep": 10,
+  "tipSamplingRate": 2.0E-4,
+  "tipSamplesPerDeme": 1000,
+  "tipSamplingProportional": true,
+  "treeProportion": 0.1,
+  "diversitySamplingCount": 1000,
+  "netauWindow": 100,
+  "immunityReconstruction": false,
+  "memoryProfiling": false,
+  "yearsFromMK": 1.0,
+  "pcaSamples": false,
+  "reducedOutput": false,
+  "tmrcaLimit": 10.0,
+  "demeCount": 1,
+  "demeNames": [
+    "pop"
+  ],
+  "initialNs": [
+    50000000
+  ],
+  "birthRate": [
+    9.1E-5
+  ],
+  "deathRate": [
+    9.1E-5
+  ],
+  "swapDemography": true,
+  "startAtEquilibriumInfected" : [true],
+  "startAtEquilibriumImmune" : [true],
+  
+  "beta": 0.36016380000000003,
+  "nu": 0.2,
+  "betweenDemePro": 0,
+  "demeBaselines": [
+    1.0
+  ],
+  "demeAmplitudes": [
+    0.0
+  ],
+  "demeOffsets": [
+    0.0
+  ],
+  "muPhenotype": 1e-4,
+  "smithConversion": 0.07,
+  "homologousImmunity": 1.0,
+  "initialTraitA": 0.0,
+  "meanStep": 0.6,
+  "sdStep": 0.3,
+  "mut2D": true,
+  "vaccinate": true,
+  "vaccineStep": 365.0,
+  "vaccineSD": 0.0,
+  "vaccineImmuneBreadth": 1.0,
+  "vaccinationRate": [
+    1.0E-4
+  ],
+  "deployDay" : 300,
+  "vaccineWindow" : 120,
+  "vaccineLag" : 270,
+  "sampleStep": 36.5,
+  "sampleHostsPerDeme": 10000,
+  "transcendental": false,
+  "immunityLoss": 0.05
+}
