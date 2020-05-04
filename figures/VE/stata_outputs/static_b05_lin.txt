@@ -1,0 +1,168 @@
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /project2/cobey/frankwen/2020-03-14_statatest/static_b5_lin.txt
+  log type:  text
+ opened on:  25 Mar 2020, 09:56:58
+
+. 
+. import delimited widedata/static_10p_b05_wide.csv
+(11 vars, 5,100,000 obs)
+
+. 
+. xtset hostid time
+       panel variable:  hostid (strongly balanced)
+        time variable:  time, 4 to 20
+                delta:  1 unit
+
+. 
+. gen lag1 = v[_n-1]
+(1 missing value generated)
+
+. gen lag2 = v[_n-2]
+(2 missing values generated)
+
+. gen lag3 = v[_n-3]
+(3 missing values generated)
+
+. gen lag4 = v[_n-4]
+(4 missing values generated)
+
+. 
+. generate byte vvr01 = v * vr01
+
+. generate byte vvr03 = v * vr03
+
+. generate byte vvr05 = v * vr05
+
+. generate byte vvr07 = v * vr07
+
+. generate byte vvr10 = v * vr10
+
+. 
+. generate byte lag1vr01 = lag1 * vr01
+(1 missing value generated)
+
+. generate byte lag2vr01 = lag2 * vr01
+(2 missing values generated)
+
+. generate byte lag3vr01 = lag3 * vr01
+(3 missing values generated)
+
+. generate byte lag4vr01 = lag4 * vr01
+(4 missing values generated)
+
+. 
+. generate byte lag1vr03 = lag1 * vr03
+(1 missing value generated)
+
+. generate byte lag2vr03 = lag2 * vr03
+(2 missing values generated)
+
+. generate byte lag3vr03 = lag3 * vr03
+(3 missing values generated)
+
+. generate byte lag4vr03 = lag4 * vr03
+(4 missing values generated)
+
+. 
+. generate byte lag1vr05 = lag1 * vr05
+(1 missing value generated)
+
+. generate byte lag2vr05 = lag2 * vr05
+(2 missing values generated)
+
+. generate byte lag3vr05 = lag3 * vr05
+(3 missing values generated)
+
+. generate byte lag4vr05 = lag4 * vr05
+(4 missing values generated)
+
+. 
+. generate byte lag1vr07 = lag1 * vr07
+(1 missing value generated)
+
+. generate byte lag2vr07 = lag2 * vr07
+(2 missing values generated)
+
+. generate byte lag3vr07 = lag3 * vr07
+(3 missing values generated)
+
+. generate byte lag4vr07 = lag4 * vr07
+(4 missing values generated)
+
+. 
+. generate byte lag1vr10 = lag1 * vr10
+(1 missing value generated)
+
+. generate byte lag2vr10 = lag2 * vr10
+(2 missing values generated)
+
+. generate byte lag3vr10 = lag3 * vr10
+(3 missing values generated)
+
+. generate byte lag4vr10 = lag4 * vr10
+(4 missing values generated)
+
+. 
+. xtreg i vr01 vr03 vr05 vr07 vr10 vvr01 vvr03 vvr05 vvr07 vvr10 lag1vr01 lag2vr01 lag3vr01 lag4vr01 lag1vr03 lag2vr03 lag3vr03 lag4vr03 lag1vr05 lag2vr05 lag3vr05 
+> lag4vr05 lag1vr07 lag2vr07 lag3vr07 lag4vr07 lag1vr10 lag2vr10 lag3vr10 lag4vr10, re vce(robust)
+
+Random-effects GLS regression                   Number of obs     =  5,099,996
+Group variable: hostid                          Number of groups  =    300,000
+
+R-sq:                                           Obs per group:
+     within  = 0.0002                                         min =         13
+     between = 0.2561                                         avg =       17.0
+     overall = 0.0159                                         max =         17
+
+                                                Wald chi2(30)     =  178913.59
+corr(u_i, X)   = 0 (assumed)                    Prob > chi2       =     0.0000
+
+                           (Std. Err. adjusted for 300,000 clusters in hostid)
+------------------------------------------------------------------------------
+             |               Robust
+           i |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+        vr01 |  -.0264531   .0003399   -77.83   0.000    -.0271192    -.025787
+        vr03 |  -.0363101   .0003411  -106.44   0.000    -.0369787   -.0356415
+        vr05 |  -.0531086     .00033  -160.95   0.000    -.0537553   -.0524618
+        vr07 |  -.0554229   .0003509  -157.94   0.000    -.0561107   -.0547352
+        vr10 |  -.0860096   .0002706  -317.81   0.000      -.08654   -.0854792
+       vvr01 |  -.0207964   .0025818    -8.05   0.000    -.0258567   -.0157362
+       vvr03 |  -.0186745   .0013688   -13.64   0.000    -.0213572   -.0159918
+       vvr05 |  -.0131131   .0008995   -14.58   0.000    -.0148761   -.0113501
+       vvr07 |  -.0159944   .0006251   -25.59   0.000    -.0172196   -.0147693
+       vvr10 |  -.0018974   .0002512    -7.55   0.000    -.0023897    -.001405
+    lag1vr01 |  -.0116705   .0028192    -4.14   0.000    -.0171961   -.0061449
+    lag2vr01 |    .003614   .0031582     1.14   0.252     -.002576     .009804
+    lag3vr01 |   .0050344   .0032027     1.57   0.116    -.0012428    .0113116
+    lag4vr01 |   .0051455   .0032067     1.60   0.109    -.0011395    .0114305
+    lag1vr03 |   -.009401   .0015113    -6.22   0.000    -.0123631   -.0064388
+    lag2vr03 |   .0022919   .0016728     1.37   0.171    -.0009868    .0055705
+    lag3vr03 |   .0032969    .001691     1.95   0.051    -.0000173    .0066112
+    lag4vr03 |   .0071841   .0017436     4.12   0.000     .0037668    .0106014
+    lag1vr05 |  -.0052256   .0010051    -5.20   0.000    -.0071955   -.0032557
+    lag2vr05 |  -.0013977   .0010652    -1.31   0.189    -.0034854      .00069
+    lag3vr05 |   .0015116    .001098     1.38   0.169    -.0006405    .0036637
+    lag4vr05 |   .0027611   .0011128     2.48   0.013     .0005801    .0049422
+    lag1vr07 |  -.0092436   .0007033   -13.14   0.000     -.010622   -.0078652
+    lag2vr07 |  -.0023494   .0007723    -3.04   0.002     -.003863   -.0008358
+    lag3vr07 |   -.000922   .0007921    -1.16   0.244    -.0024744    .0006304
+    lag4vr07 |   -.000023   .0007937    -0.03   0.977    -.0015787    .0015327
+    lag1vr10 |  -.0006903   .0002812    -2.45   0.014    -.0012414   -.0001391
+    lag2vr10 |  -.0005923   .0002825    -2.10   0.036     -.001146   -.0000385
+    lag3vr10 |  -.0000207   .0002978    -0.07   0.945    -.0006043    .0005629
+    lag4vr10 |  -.0000883      .0003    -0.29   0.768    -.0006763    .0004997
+       _cons |   .0917435   .0002491   368.27   0.000     .0912553    .0922318
+-------------+----------------------------------------------------------------
+     sigma_u |          0
+     sigma_e |  .21411797
+         rho |          0   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
+. log close
+      name:  <unnamed>
+       log:  /project2/cobey/frankwen/2020-03-14_statatest/static_b5_lin.txt
+  log type:  text
+ closed on:  25 Mar 2020, 10:00:08
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -8,27 +8,30 @@ library(viridis)
 library(plyr)
 library(cowplot)
 
-textSize = 12
+textSize = 11
 pointSize = 1.0
 lineSize = 1
-plotDirectory='./'
 plot_themes  = 	theme_classic() +
-				theme(axis.line = element_line(size=1)) +
-				theme(axis.ticks = element_line(size=0.5)) +
-				theme(axis.ticks.length = unit(-0.1,'cm')) +
-				theme(axis.title.x=element_text(size=textSize)) + 
-				theme(axis.text.x=element_text(size= textSize, margin=margin(5,5,5,5,'pt'))) + 
-				theme(axis.title.y=element_text(size= textSize)) +
-				theme(axis.text.y=element_text(size= textSize, margin=margin(5,5,5,5,'pt'))) +
-				theme(plot.title=element_text(size=textSize+2)) +
-				theme(plot.margin=unit(c(5,5,5,5),'mm')) +
-				theme(legend.title=element_text(size=textSize)) +
-				theme(legend.text=element_text(size=textSize)) +
-				theme(legend.position ='bottom') +
-				theme(legend.direction='horizontal') +
-				theme(legend.margin = unit(0,'cm')) +
-				theme(panel.border = element_rect(colour = "black", fill=NA, size=1)) +
-				theme(axis.line = element_blank())
+  theme(axis.line = element_line(size=1)) +
+  theme(axis.ticks = element_line(size=0.5)) +
+  theme(axis.ticks.length = unit(-0.1,'cm')) +
+  theme(axis.title.x=element_text(size=textSize)) + 
+  theme(axis.text.x=element_text(size= textSize, margin=margin(5,5,5,5,'pt'))) + 
+  theme(axis.title.y=element_text(size= textSize)) +
+  theme(axis.text.y=element_text(size= textSize, margin=margin(5,5,5,5,'pt'))) +
+  theme(plot.title=element_text(size=textSize+2)) +
+  theme(plot.margin=unit(c(4,4,0,4),'mm')) +
+  theme(legend.title=element_text(size=textSize)) +
+  theme(legend.text=element_text(size=textSize)) +
+  theme(legend.position ='bottom') +
+  theme(legend.direction='horizontal') +
+  theme(legend.box.margin = margin(0,0,0,0,'mm')) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=1)) +
+  theme(axis.line = element_blank())
+
+percentile = function(percentile){
+  function(x) quantile(x, percentile, na.rm=T)
+}
 
 makeExtinctDensity = function(vaccineDF, nbreaks=41){
   rates = sort(unique(vaccineDF$vaccinationRate))
@@ -47,7 +50,7 @@ makeExtinctDensity = function(vaccineDF, nbreaks=41){
   return(dens)
 }
 
-make.extinct.plot = function(extinctDens, summaryDF,plotName){
+make.extinct.plot = function(extinctDens, summaryDF,plotName, vaccineDF){
   extinct.plot = ggplot(summaryDF, aes(x=vaccinationRate, y=extinct/500)) +
     xlab('Vaccination rate') +
     ylab('Fraction extinct') +
@@ -64,11 +67,24 @@ make.extinct.plot = function(extinctDens, summaryDF,plotName){
     scale_y_continuous(expand = c(0,0)) +
     theme(panel.border = element_rect(colour = "black", fill=NA, size=.2)) +
     theme(axis.ticks = element_line(size=.1))  +
-    geom_line(aes(y=mean),color = 'white',size=.5) +
+    stat_summary(data = vaccineDF, 
+                 fun.data = "mean_cl_boot",
+                 geom = 'errorbar',
+                 size = .5,
+                 color = 'white') + 
+    geom_point(data = vaccineDF, stat = 'summary',
+               fun.y = 'mean',
+               color = 'white', size = .5) + 
+    # geom_errorbar(data = vaccineDF, stat = 'summary',
+    #               fun.ymin = percentile(.05),
+    #               fun.ymax = percentile(.95),
+    #               width = 0,
+    #               color = 'white', size = .3) +
+    #geom_line(aes(y=mean),color = 'white',size=.5) +
     plot_themes
   
-  plot = plot_grid(extinct.plot, time.plot, labels = c('A','B'), align = 'h', ncol = 2)
-  save_plot(paste(plotName,'.pdf',sep=''), plot, ncol=2, nrow = 1, base_aspect_ratio = 1)
+  plot = plot_grid(extinct.plot, time.plot, labels = c('A','B'), align = 'h', axis = 'bt', ncol = 2)
+  save_plot(paste(plotName,'.pdf',sep=''), plot, ncol=2, nrow = 1, base_aspect_ratio = .9)
 }
 
 resultsDir = '../../analysis/breadth_1_density/vaccine/'
@@ -97,7 +113,7 @@ summaryDF = ddply(vaccineDF[vaccineDF$tmrcaLimit==0,], .(vaccinationRate), summa
                   tmrcaLimit = sum(tmrcaLimit),
                   fluLike = sum(fluLike))
 
-make.extinct.plot(extinctDens, summaryDF, 'extinct_breadth_1')
+make.extinct.plot(extinctDens, summaryDF, 'extinct_breadth_1', vaccineDF)
 
 
 cor.test(vaccineDF$vaccinationRate, vaccineDF$cumulativeDrift, method = 'spearman')

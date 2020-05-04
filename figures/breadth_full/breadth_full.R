@@ -8,27 +8,31 @@ library(viridis)
 library(plyr)
 library(cowplot)
 
-textSize = 12
+
+textSize = 14
 pointSize = 1.0
 lineSize = 1
-plotDirectory='./plots'
 plot_themes  = 	theme_classic() +
-				theme(axis.line = element_line(size=1)) +
-				theme(axis.ticks = element_line(size=0.5)) +
-				theme(axis.ticks.length = unit(-0.1,'cm')) +
-				theme(axis.title.x=element_text(size=textSize)) + 
-				theme(axis.text.x=element_text(size= textSize, margin=margin(5,5,5,5,'pt'))) + 
-				theme(axis.title.y=element_text(size= textSize)) +
-				theme(axis.text.y=element_text(size= textSize, margin=margin(5,5,5,5,'pt'))) +
-				theme(plot.title=element_text(size=textSize+2)) +
-				theme(plot.margin=unit(c(5,5,5,5),'mm')) +
-				theme(legend.title=element_text(size=textSize)) +
-				theme(legend.text=element_text(size=textSize)) +
-				theme(legend.position ='bottom') +
-				theme(legend.direction='horizontal') +
-				theme(legend.margin = unit(0,'cm')) +
-				theme(panel.border = element_rect(colour = "black", fill=NA, size=1)) +
-				theme(axis.line = element_blank())
+  theme(axis.line = element_line(size=1)) +
+  theme(axis.ticks = element_line(size=0.5)) +
+  theme(axis.ticks.length = unit(-0.1,'cm')) +
+  theme(axis.title.x=element_text(size=textSize)) + 
+  theme(axis.text.x=element_text(size= textSize, margin=margin(5,5,5,5,'pt'))) + 
+  theme(axis.title.y=element_text(size= textSize)) +
+  theme(axis.text.y=element_text(size= textSize, margin=margin(5,5,5,5,'pt'))) +
+  theme(plot.title=element_text(size=textSize+2)) +
+  theme(plot.margin=unit(c(4,4,0,4),'mm')) +
+  theme(legend.title=element_text(size=textSize)) +
+  theme(legend.text=element_text(size=textSize)) +
+  theme(legend.position ='bottom') +
+  theme(legend.direction='horizontal') +
+  theme(legend.box.margin = margin(0,0,0,0,'mm')) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=1)) +
+  theme(axis.line = element_blank())
+
+percentile = function(percentile){
+  function(x) quantile(x, percentile, na.rm=T)
+}
 
 makeDriftDensity = function(vaccineDF,nbreaks=41){
   rates = sort(unique(vaccineDF$vaccinationRate))
@@ -65,20 +69,31 @@ makeIncDensity = function(vaccineDF, nbreaks=41){
 }
 
 makeDensityPlot = function(driftDens, incDens, plotName, meanDF, vaccineDF){
+  
   plot1 = ggplot(data = driftDens, aes(x=vaccinationRate,y=cumulativeDrift)) + 
     xlab('Vaccination rate') +
     ylab('Cumulative antigenic evolution') +
     geom_tile(aes(fill=density)) + 
-    scale_fill_viridis(option='plasma') +
+    geom_point(data = vaccineDF, stat = 'summary',
+               fun.y = 'mean',
+               color = 'white', size = .5) + 
+    # stat_summary(data = vaccineDF, aes(y = cumulativeDrift),
+    #              fun.data = "mean_cl_boot",
+    #              geom = 'errorbar',
+    #              size = .5,
+    #              color = 'white') + 
+    geom_errorbar(data = vaccineDF, stat = 'summary',
+                  fun.ymin = percentile(.05),
+                  fun.ymax = percentile(.95),
+                  width = 0,
+                  color = 'white', size = .3) +
+    scale_fill_viridis(option='plasma') +#, limits = c(0,1)) +
     guides(fill=guide_colorbar(barwidth=11,barheight=0.5, title.position = 'top')) +
     scale_x_continuous(expand = c(0,0)) +
     scale_y_continuous(expand = c(0,0)) +
     theme(panel.border = element_rect(colour = "black", fill=NA, size=.2)) +
     theme(axis.ticks = element_line(size=.1))  +
-    # 				geom_line(aes(y=mean),color = 'white',size=.5, linetype='dotted') +
-    # 				geom_line(data = meanDF, aes(y=mean.drift),color = 'white',size=.5) +
-    geom_smooth(data=vaccineDF, aes(x=vaccinationRate,y=cumulativeDrift), color='white', size=0.3, se=TRUE, alpha=0.7,) +
-    geom_smooth(data=vaccineDF[vaccineDF$fluLike==1,], aes(x=vaccinationRate,y=cumulativeDrift), color='white', size=0.3, se=TRUE, alpha=0.7, linetype='dotted') +
+    #geom_smooth(data=vaccineDF, aes(x=vaccinationRate,y=cumulativeDrift), color='white', size=0.6, se=TRUE, alpha=0.7) +
     plot_themes +
     ggtitle(paste("Breadth = ",unique(vaccineDF$vaccineImmuneBreadth),sep='')) +
     theme(plot.title = element_text(hjust=0))
@@ -87,18 +102,30 @@ makeDensityPlot = function(driftDens, incDens, plotName, meanDF, vaccineDF){
     xlab('Vaccination rate') +
     ylab('Cumulative incidence') +
     geom_tile(aes(fill=density)) + 
-    scale_fill_viridis(option='plasma') +
+    geom_point(data = vaccineDF, stat = 'summary',
+               fun.y = 'mean',
+               color = 'white', size = .5) + 
+    # stat_summary(data = vaccineDF, aes(y = cumulativeIncidence),
+    #              fun.data = "mean_cl_boot",
+    #              geom = 'errorbar',
+    #              size = .5,
+    #              color = 'white') + 
+    geom_errorbar(data = vaccineDF, stat = 'summary',
+                  fun.ymin = percentile(.05),
+                  fun.ymax = percentile(.95),
+                  width = 0,
+                  color = 'white', size = .3) +
+    scale_fill_viridis(option='plasma')+ #, limits = c(0,1)) +
     guides(fill=guide_colorbar(barwidth=11,barheight=0.5, title.position = 'top')) +
     scale_x_continuous(expand = c(0,0)) +
     scale_y_continuous(expand = c(0,0)) +
     theme(panel.border = element_rect(colour = "black", fill=NA, size=.2)) +
     theme(axis.ticks = element_line(size=.1))  +
-    # 				geom_line(aes(y=mean),color = 'white',size=.5, linetype='dotted') +
-    # 				geom_line(data = meanDF, aes(y=mean.incidence),color = 'white',size=.5) +
-    geom_smooth(data=vaccineDF, aes(x=vaccinationRate,y=cumulativeIncidence), color='white', size=0.3, se=TRUE, alpha=0.7) +
-    geom_smooth(data=vaccineDF[vaccineDF$fluLike==1,], aes(x=vaccinationRate,y=cumulativeIncidence), color='white', size=0.3, se=TRUE, alpha=0.7, linetype='dotted') +
+    #geom_smooth(data=vaccineDF, aes(x=vaccinationRate,y=cumulativeIncidence), color='white', size=0.6, se=TRUE, alpha=0.7) +
+    #geom_smooth(data=vaccineDF[vaccineDF$fluLike==1,], aes(x=vaccinationRate,y=cumulativeIncidence), color='white', size=0.6, se=TRUE, alpha=0.7, linetype='dotted') +
+    #geom_smooth(data=vaccineDF[vaccineDF$extinct==1,], aes(x=vaccinationRate,y=cumulativeIncidence), color='white', size=0.6, se=TRUE, alpha=0.7, linetype='dashed') +
     plot_themes
-
+  
     return(list(plot1=plot1, plot2=plot2))
   
 }

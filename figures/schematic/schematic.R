@@ -7,6 +7,8 @@ library(scales)
 library(viridis)
 library(plyr)
 library(cowplot)
+library(RColorBrewer)
+library(tidyverse)
 
 textSize = 12
 pointSize = 1.0
@@ -36,6 +38,9 @@ lag = 300
 window = 120
 b = 0.5
 s = 0.07
+#color = grDevices::colors()[grep('gr(a|e)y', grDevices::colors(), invert = T)]
+#mycols = sample(color, 21)
+mycols = colorRampPalette(brewer.pal(12,'Paired'))(22)
 
 makeMutationPlot = function(){
   delta.mean = .6
@@ -72,7 +77,7 @@ makeBreadthPlot = function() {
     guides(colour = guide_legend(override.aes = list(linetype=c(1,1)), title.position = 'top')) +
     plot_themes +
     theme(legend.direction='vertical') +
-    theme(legend.position=c(.7,.2))+
+    theme(legend.position=c(.7,.27))+
     theme(legend.title=element_text(size=textSize-2)) +
     theme(legend.text=element_text(size=textSize-2)) 
 #    theme(legend.direction='vertical') 
@@ -80,21 +85,29 @@ makeBreadthPlot = function() {
   return(plot)
 }
 
-makeIncidencePlot = function(ts){
-  yConst = 0.022
-  selectionDates = data.frame(date = seq(0,20), y = yConst+0.005, year = seq(0,20))
+
+
+makeIncidencePlotSingle = function(ts){
+  yConst = 0.022 #y position of vaccine distribution bars
+  yNudge = .0024 #yConst + yNudge gives position of vaccine selection dates
+  selectionDates = data.frame(date = seq(0,20), y = yConst+yNudge, year = seq(0,20))
   selectionDates = selectionDates[1:(nrow(selectionDates)-1),]
-  vaccineDates = data.frame(start = seq(0,19) + lag/365, end = seq(0,19) + (lag+window)/365, y= yConst, year = 1:20)
+  vaccineDates = data.frame(start = seq(0,19) + lag/365, 
+                            end = seq(0,19) + (lag+window)/365, 
+                            y= yConst, 
+                            year = 1:20)
   plot = ggplot(data = ts[ts$totalCases>2000,], aes(x=date,y=totalCases/5e7)) + 
     xlab('Year') +
     ylab('Incidence') +
     ylim(c(0,0.02)) +
     geom_line() +
     geom_segment(aes(x=0,xend=20, y=yConst, yend=yConst), size = 4, alpha=0.5, color = 'grey') +
-    geom_segment(data = vaccineDates, aes(x=start, xend = end, y = y, yend=y, color=year, size='Vaccine distribution')) +
-    scale_color_viridis(guide = FALSE) +
-    geom_point(data = selectionDates, aes(x=date, y= y, fill=year, size = 'Strain selection'), shape=25, stroke=0) +
-    scale_fill_viridis(guide=FALSE) +
+    geom_segment(data = vaccineDates, aes(x=start, xend = end, y = y, yend=y, color=factor(year), size='Vaccine distribution')) +
+    #scale_color_viridis(guide = FALSE) +
+    scale_color_manual(guide=FALSE,values = mycols) +
+    geom_point(data = selectionDates, aes(x=date, y= y, fill=factor(year), size = 'Strain selection'), shape=25, stroke=0) +
+    #scale_fill_viridis(guide=FALSE) +
+    scale_fill_manual(guide=FALSE,values = mycols) +
     theme(panel.border = element_rect(colour = "black", fill=NA, size=.2)) +
     theme(axis.ticks = element_line(size=.1))  +
     scale_size_manual(name='', values=c('Vaccine distribution' = 4, 'Strain selection' = 2)) +
@@ -103,6 +116,37 @@ makeIncidencePlot = function(ts){
     theme(legend.direction='horizontal', legend.box='horizontal') +
     ylim(c(0,0.028)) 
     
+  return(plot)
+}
+
+makeIncidencePlot = function(ts){
+  yConst = 0.042 #y position of vaccine distribution bars
+  yNudge = .004 #yConst + yNudge gives position of vaccine selection dates
+  selectionDates = data.frame(date = seq(0,20), y = yConst+yNudge, year = seq(0,20))
+  selectionDates = selectionDates[1:(nrow(selectionDates)-1),]
+  vaccineDates = data.frame(start = seq(0,19) + lag/365, 
+                            end = seq(0,19) + (lag+window)/365, 
+                            y= yConst, 
+                            year = 1:20)
+  plot = ggplot(ts, aes(x=date, y=incidence)) +
+    geom_line(aes(group = job_id), alpha = 0.4) +
+    xlab('Year') +
+    ylab('Incidence') +
+    geom_segment(aes(x=0,xend=20, y=yConst, yend=yConst), size = 4, alpha=0.5, color = 'grey') +
+    geom_segment(data = vaccineDates, aes(x=start, xend = end, y = y, yend=y, color=factor(year), size='Vaccine distribution')) +
+    #scale_color_viridis(guide = FALSE) +
+    scale_color_manual(guide=FALSE,values = mycols) +
+    geom_point(data = selectionDates, aes(x=date, y= y, fill=factor(year), size = 'Strain selection'), shape=25, stroke=0) +
+    #scale_fill_viridis(guide=FALSE) +
+    scale_fill_manual(guide=FALSE,values = mycols) +
+    theme(panel.border = element_rect(colour = "black", fill=NA, size=.2)) +
+    theme(axis.ticks = element_line(size=.1))  +
+    scale_size_manual(name='', values=c('Vaccine distribution' = 4, 'Strain selection' = 2)) +
+    guides(size = guide_legend(override.aes = list(linetype=c(0,1), shape=c(25, NA), size = c(3,4), fill=c('black','black')))) +
+    plot_themes +
+    theme(legend.direction='horizontal', legend.box='horizontal') +
+    ylim(c(0,0.048)) 
+  
   return(plot)
 }
 
@@ -117,14 +161,29 @@ makeMap = function(tips, vaccines){
     ylim( c(mean(tips$ag2) - diff(range)/2, mean(tips$ag2) + diff(range)/2)) +
     geom_point(aes(color = year), size=2) +
     scale_colour_continuous('Year',high='#de2d26',low='#fee0d2',guide=guide_colorbar(barwidth=11,barheight=0.5, title.position='left')) +
-    geom_point(data = vaccines, aes(fill = year), size=3, shape = 25, stroke=0) +
-    scale_fill_viridis(guide='none') + 
+    geom_point(data = vaccines, aes(fill = factor(year)), size=3, shape = 25, stroke=0) +
+    #scale_fill_viridis(guide='none') + 
+    scale_fill_manual(guide = 'none', values = mycols) +
     theme(panel.border = element_rect(colour = "black", fill=NA, size=.2)) +
     theme(axis.ticks = element_line(size=.1))  +
     ylim(c(-3,3)) +
     plot_themes 
   
   return(plot)
+}
+
+
+get_ts = function(resultsDir, runId){
+  runDir = paste(resultsDir, 'results/',runId, sep='')
+  outDbname = paste(runDir,'/output.sqlite',sep='')
+  comboDb = dbConnect(SQLite(), dbname = outDbname)
+  initExtension(comboDb)
+  
+  ts = dbGetQuery(comboDb, 'SELECT * FROM timeseries') %>%
+    select(job_id, totalCases, totalN)
+
+  return(ts)
+  
 }
 
 runId = 310
@@ -142,21 +201,26 @@ vaccines$year = (0:20)
 names(vaccines) = c('ag1','ag2','year')
 vaccines$ag1 = -vaccines$ag1
 
-ts = dbGetQuery(comboDb, 'SELECT * FROM timeseries')
+ts = dbGetQuery(comboDb, 'SELECT * FROM timeseries') #single example incidence plot
 tips = dbGetQuery(comboDb, 'SELECT * FROM tips')
 tips$ag1 = -tips$ag1
 
+ts = read_csv('zerovac_ts.csv')
+
 map = makeMap(tips, vaccines)
-incidence = makeIncidencePlot(ts)
+#incidence = makeIncidencePlotSingle(ts) #single example incidence plot
+incidence = makeIncidencePlot(ts) 
 breadthPlot = makeBreadthPlot()
 mutPlot = makeMutationPlot()
 plotName = 'schematic'
 
-plot = ggdraw(xlim=c(0,1), ylim=c(0,1.7)) +
-  draw_plot(map, 0, 1.1, width=1, height=0.4) +
-  draw_plot(incidence, 0, .6, width=1, height=0.4) +
-  draw_plot(breadthPlot, 0, 0, .5, .6) +
-  draw_plot(mutPlot, .5, 0, .5, .6) +
-  draw_plot_label(c("A", "B", "C", "D"), c(0, 0, 0, .5), c(1.7, 1.1, .6, .6), size = 15)
+plot = ggdraw(xlim=c(0,1), ylim=c(0,1.65)) +
+  draw_plot(map, 0, 1.05, width=1, height=.6) +
+  draw_plot(incidence, 0, .5, width=1, height=0.6) +
+  draw_plot(breadthPlot, 0, 0, .5, .5) +
+  draw_plot(mutPlot, .5, 0, .5, .5) +
+  draw_plot_label(c("A", "B", "C", "D"), c(0, 0, 0, .5), c(1.65, 1.15, .55, .55), size = 15)
 
-save_plot(paste(plotDirectory,plotName,'.pdf',sep=''), plot, ncol=2, nrow = 2, base_aspect_ratio = 0.9)
+save_plot(paste(plotDirectory,plotName,'.pdf',sep=''), plot, ncol=2, nrow = 2, base_aspect_ratio = 1)
+
+

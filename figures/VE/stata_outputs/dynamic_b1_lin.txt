@@ -1,0 +1,167 @@
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /project2/cobey/frankwen/2020-03-14_statatest/dynamic_b1_lin.txt
+  log type:  text
+ opened on:  25 Mar 2020, 09:22:47
+
+. 
+. import delimited widedata/dynamic_10p_b1_wide.csv
+(11 vars, 5,100,000 obs)
+
+. 
+. xtset hostid time
+       panel variable:  hostid (strongly balanced)
+        time variable:  time, 4 to 20
+                delta:  1 unit
+
+. 
+. gen lag1 = v[_n-1]
+(1 missing value generated)
+
+. gen lag2 = v[_n-2]
+(2 missing values generated)
+
+. gen lag3 = v[_n-3]
+(3 missing values generated)
+
+. gen lag4 = v[_n-4]
+(4 missing values generated)
+
+. 
+. generate byte vvr01 = v * vr01
+
+. generate byte vvr03 = v * vr03
+
+. generate byte vvr05 = v * vr05
+
+. generate byte vvr07 = v * vr07
+
+. generate byte vvr10 = v * vr10
+
+. 
+. generate byte lag1vr01 = lag1 * vr01
+(1 missing value generated)
+
+. generate byte lag2vr01 = lag2 * vr01
+(2 missing values generated)
+
+. generate byte lag3vr01 = lag3 * vr01
+(3 missing values generated)
+
+. generate byte lag4vr01 = lag4 * vr01
+(4 missing values generated)
+
+. 
+. generate byte lag1vr03 = lag1 * vr03
+(1 missing value generated)
+
+. generate byte lag2vr03 = lag2 * vr03
+(2 missing values generated)
+
+. generate byte lag3vr03 = lag3 * vr03
+(3 missing values generated)
+
+. generate byte lag4vr03 = lag4 * vr03
+(4 missing values generated)
+
+. 
+. generate byte lag1vr05 = lag1 * vr05
+(1 missing value generated)
+
+. generate byte lag2vr05 = lag2 * vr05
+(2 missing values generated)
+
+. generate byte lag3vr05 = lag3 * vr05
+(3 missing values generated)
+
+. generate byte lag4vr05 = lag4 * vr05
+(4 missing values generated)
+
+. 
+. generate byte lag1vr07 = lag1 * vr07
+(1 missing value generated)
+
+. generate byte lag2vr07 = lag2 * vr07
+(2 missing values generated)
+
+. generate byte lag3vr07 = lag3 * vr07
+(3 missing values generated)
+
+. generate byte lag4vr07 = lag4 * vr07
+(4 missing values generated)
+
+. 
+. generate byte lag1vr10 = lag1 * vr10
+(1 missing value generated)
+
+. generate byte lag2vr10 = lag2 * vr10
+(2 missing values generated)
+
+. generate byte lag3vr10 = lag3 * vr10
+(3 missing values generated)
+
+. generate byte lag4vr10 = lag4 * vr10
+(4 missing values generated)
+
+. 
+. xtreg i vr01 vr03 vr05 vr07 vr10 vvr01 vvr03 vvr05 vvr07 vvr10 lag1vr01 lag2vr01 lag3vr01 lag4vr01 lag1vr03 lag2vr03 lag3vr03 lag4vr03 lag1vr05 lag2vr05 lag3vr05 
+> lag4vr05 lag1vr07 lag2vr07 lag3vr07 lag4vr07 lag1vr10 lag2vr10 lag3vr10 lag4vr10, re or vce(robust)
+option or not allowed
+r(198);
+
+. xtreg i vr01 vr03 vr05 vr07 vr10 vvr01 vvr03 vvr05 vvr07 vvr10 lag1vr01 lag2vr01 lag3vr01 lag4vr01 lag1vr03 lag2vr03 lag3vr03 lag4vr03 lag1vr05 lag2vr05 lag3vr05 
+> lag4vr05 lag1vr07 lag2vr07 lag3vr07 lag4vr07 lag1vr10 lag2vr10 lag3vr10 lag4vr10, re vce(robust)
+
+Random-effects GLS regression                   Number of obs     =  5,099,996
+Group variable: hostid                          Number of groups  =    300,000
+
+R-sq:                                           Obs per group:
+     within  = 0.0005                                         min =         13
+     between = 0.4774                                         avg =       17.0
+     overall = 0.0361                                         max =         17
+
+                                                Wald chi2(25)     =          .
+corr(u_i, X)   = 0 (assumed)                    Prob > chi2       =          .
+
+                           (Std. Err. adjusted for 300,000 clusters in hostid)
+------------------------------------------------------------------------------
+             |               Robust
+           i |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+        vr01 |  -.0126204     .00035   -36.06   0.000    -.0133063   -.0119344
+        vr03 |  -.0259222   .0003444   -75.27   0.000    -.0265972   -.0252473
+        vr05 |  -.0766583   .0002954  -259.54   0.000    -.0772372   -.0760794
+        vr07 |  -.0904834   .0002566  -352.61   0.000    -.0909864   -.0899805
+        vr10 |  -.0921988   .0002505  -368.07   0.000    -.0926898   -.0917079
+       vvr01 |  -.0526623   .0017914   -29.40   0.000    -.0561733   -.0491512
+       vvr03 |  -.0421848   .0009573   -44.07   0.000     -.044061   -.0403085
+       vvr05 |  -.0102022   .0003531   -28.89   0.000    -.0108944   -.0095101
+       vvr07 |   -.001099   .0001022   -10.75   0.000    -.0012994   -.0008986
+       vvr10 |          0   5.25e-20     0.00   1.000    -1.03e-19    1.03e-19
+    lag1vr01 |  -.0381695   .0022045   -17.31   0.000    -.0424903   -.0338487
+    lag2vr01 |   -.028127   .0024404   -11.53   0.000    -.0329102   -.0233438
+    lag3vr01 |  -.0163713     .00269    -6.09   0.000    -.0216435   -.0110991
+    lag4vr01 |  -.0048259   .0029308    -1.65   0.100    -.0105701    .0009184
+    lag1vr03 |  -.0339625   .0011098   -30.60   0.000    -.0361377   -.0317874
+    lag2vr03 |  -.0257216   .0012434   -20.69   0.000    -.0281587   -.0232846
+    lag3vr03 |  -.0153793   .0013896   -11.07   0.000     -.018103   -.0126557
+    lag4vr03 |  -.0122544    .001432    -8.56   0.000     -.015061   -.0094478
+    lag1vr05 |  -.0078594   .0004213   -18.65   0.000    -.0086851   -.0070336
+    lag2vr05 |  -.0061746   .0004656   -13.26   0.000    -.0070872    -.005262
+    lag3vr05 |  -.0037373   .0005196    -7.19   0.000    -.0047558   -.0027188
+    lag4vr05 |  -.0032066   .0005329    -6.02   0.000    -.0042511   -.0021621
+    lag1vr07 |  -.0007315     .00013    -5.62   0.000    -.0009864   -.0004766
+    lag2vr07 |  -.0005742   .0001393    -4.12   0.000    -.0008472   -.0003012
+    lag3vr07 |  -.0004404   .0001467    -3.00   0.003     -.000728   -.0001528
+    lag4vr07 |  -.0004579   .0001453    -3.15   0.002    -.0007427    -.000173
+    lag1vr10 |          0   5.24e-20     0.00   1.000    -1.03e-19    1.03e-19
+    lag2vr10 |          0   5.24e-20     0.00   1.000    -1.03e-19    1.03e-19
+    lag3vr10 |          0   5.25e-20     0.00   1.000    -1.03e-19    1.03e-19
+    lag4vr10 |          0   5.25e-20     0.00   1.000    -1.03e-19    1.03e-19
+       _cons |   .0921988   .0002505   368.07   0.000     .0917079    .0926898
+-------------+----------------------------------------------------------------
+     sigma_u |          0
+     sigma_e |  .19753925
+         rho |          0   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+
