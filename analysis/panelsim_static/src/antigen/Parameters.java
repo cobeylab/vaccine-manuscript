@@ -80,6 +80,8 @@ public class Parameters {
 	public Boolean synchronizeVaccination; // whether to synchronize vaccination for 4 months
 	public Double deployDay; //how many days between start of vaccine 'season'
 	public Double vaccineWindow; //how many days the vaccine 'season' lasts
+	public Boolean varyVaccinationRate;
+	public Double[] allVaccinationRates;
 	
 	// Periodic sampling of hosts into SQLite db
 	// TODO: not implemented
@@ -92,4 +94,5 @@ public class Parameters {
 	public Double writeSampleRateS;
 	public Double writeSampleRateI;
 	public Boolean writeReference;
+	public Boolean trackVaccines;
 }

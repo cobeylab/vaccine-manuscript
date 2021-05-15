@@ -78,9 +78,9 @@ pos = position_dodge(width = .5)
 outplot = ggplot(combined_distances, aes(x=rate, y = d, color = type)) + 
   geom_point(position = pos) +
   geom_errorbar(position = pos, aes(ymin = d-sd_avg, ymax = d+sd_avg), width = .2) + 
-  scale_color_brewer(palette= 'Dark2') +
-  xlab('Annual vaccination rate') +
+  scale_color_brewer(palette= 'Set1') +
+  xlab('Annual vaccination coverage') +
   ylab('Mean vaccine distance\n(Antigenic units)') +
   plot_themes
 
-save_plot('~/Downloads/vaccine_distance.pdf', outplot,base_aspect_ratio = 1.5)
+save_plot('vaccine_distance.pdf', outplot,base_aspect_ratio = 1.5)

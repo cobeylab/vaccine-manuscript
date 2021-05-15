@@ -52,13 +52,13 @@ makeExtinctDensity = function(vaccineDF, nbreaks=41){
 
 make.extinct.plot = function(extinctDens, summaryDF,plotName, vaccineDF){
   extinct.plot = ggplot(summaryDF, aes(x=vaccinationRate, y=extinct/500)) +
-    xlab('Vaccination rate') +
+    xlab('Vaccination coverage') +
     ylab('Fraction extinct') +
     geom_point(size=0.5) +
     plot_themes
   
   time.plot = ggplot(data = extinctDens, aes(x=vaccinationRate,y=lastDate)) + 
-    xlab('Vaccination rate') +
+    xlab('Vaccination coverage') +
     ylab('Time to extinction') +
     geom_tile(aes(fill=density)) + 
     scale_fill_viridis(option='plasma') +

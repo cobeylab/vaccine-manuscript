@@ -40,7 +40,9 @@ public class HostPopulation {
 	public final int initialR;
 	public final int initialS;
 	public final int initialT;
-		
+	
+	private Double currentVaccinationRate;
+
 	// construct population, using Virus v as initial infection
 	public HostPopulation(Simulation sim, Parameters params, Phenotype urImmunity, Virus urVirus, int d) {
 		this.sim = sim;
@@ -50,6 +52,8 @@ public class HostPopulation {
 		// basic params
 		deme = d;
 		name = params.demeNames[deme];
+		
+		currentVaccinationRate = params.vaccinationRate[deme];
 		
 		// Calculate equilibrium
 		assert params.swapDemography; // Code currently assumes this
@@ -248,6 +252,10 @@ public class HostPopulation {
 	public double getAntigenicDiversity() {
 		return antigenicDiversity;
 	}			
+	
+	public double getVaccinationRate() {
+		return currentVaccinationRate;
+	}
 	
 	public void removeSusceptible(int i) {
 		int lastIndex = getS() - 1;
@@ -485,6 +493,12 @@ public class HostPopulation {
 		}
 	}
 	
+	public void updateVaccinationRate(){
+		currentVaccinationRate = 0.0;
+		//currentVaccinationRate = params.allVaccinationRates[Random.nextInt(0,params.allVaccinationRates.length-1)] * params.deltaT * 365.0/ params.vaccineWindow;
+		System.err.println("Updating rate :" + currentVaccinationRate);
+	}
+	
 	private void vaccinate(int vaccineId, List<Host> hosts, List<Integer> counts, double vaccinationRate) {
 		if(hosts.size() == 0) {
 			return;
@@ -510,7 +524,10 @@ public class HostPopulation {
 	
 	// vaccinate a Poisson-distributed number of hosts (in all states)
 	public void vaccinate(int vaccineId) {
-		double vaccinationRate = params.vaccinationRate[deme] * params.deltaT * 365.0 / params.vaccineWindow;
+		double vaccinationRate = currentVaccinationRate * params.deltaT * 365.0 / params.vaccineWindow;
+		if(params.varyVaccinationRate){
+			vaccinationRate = currentVaccinationRate * params.deltaT * 365.0/ params.vaccineWindow;
+		}
 		
 		vaccinate(vaccineId, susceptibles, nVaccinatedS, vaccinationRate);
 		vaccinate(vaccineId, infecteds, nVaccinatedI, vaccinationRate);
@@ -788,14 +805,26 @@ public class HostPopulation {
 		// step through susceptibles and print
 		for (int i = 0; i < params.writeSampleRateS*getS(); i++) {
 			Host h = getRandomHostS();
-			h.writeHostsToSqlite(name, i, sim, sampleDb);
+			h.writeHostsToSqlite(name, i, sim, sampleDb, getS());
 		}
 		
+		// step through infecteds and print
+//		if(infecteds.size() != 0 ){
+//			for (int i = 0; i < params.writeSampleRateI*getI(); i++) {
+//				Host h = infecteds.get(i);
+//				h.writeInfectedToSqlite(name, i, sim, sampleDb);
+//			}	
+//		}
+		
+	}
+	
+	public void writeVirusesToSqlite(SqlJetDb sampleDb){
+
 		// step through infecteds and print
 		if(infecteds.size() != 0 ){
 			for (int i = 0; i < params.writeSampleRateI*getI(); i++) {
 				Host h = infecteds.get(i);
-				h.writeInfectedToSqlite(name, i, sim, sampleDb);
+				h.writeVirusesToSqlite(name, i, sim, sampleDb);
 			}	
 		}
 		
@@ -863,7 +892,7 @@ public class HostPopulation {
 					0,
 					h.getLastVaccineDate(),
 					h.getLastLastVaccineDate(),
-					params.vaccinationRate[deme], 
+					currentVaccinationRate, 
 					(int) h.getVaccinationHistory(sim).size(), 
 					(int) h.getHistoryLength(),
 					-100.0,
@@ -881,7 +910,7 @@ public class HostPopulation {
 					1,
 					h.getLastVaccineDate(),
 					h.getLastLastVaccineDate(),
-					params.vaccinationRate[deme],
+					currentVaccinationRate,
 					(int) h.getVaccinationHistory(sim).size(), 
 					(int) h.getHistoryLength(),
 					h.getInfection().getPhenotype().getTraitA(),

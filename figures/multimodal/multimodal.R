@@ -57,7 +57,7 @@ for(breadth in sort(unique(vaccineDF$vaccineImmuneBreadth))){
   plot1 = ggplot(vaccineDF[vaccineDF$vaccineImmuneBreadth==breadth,]) + 
     geom_freqpoly(aes(x=cumulativeDrift, color = vaccinationRate, group=vaccinationRate), binwidth=1.5) + 
     scale_color_viridis() +
-    guides(color=guide_colorbar(barwidth=11,barheight=0.5, title.position = 'top', title = 'Vaccination rate')) +
+    guides(color=guide_colorbar(barwidth=11,barheight=0.5, title.position = 'top', title = 'Annual vaccination coverage')) +
     plot_themes +
     ggtitle(paste("Breadth = ",breadth,sep='')) +
     theme(plot.title = element_text(hjust=0)) + xlab('Cumulative antigenic evolution') + ylim(0,400)
@@ -65,7 +65,7 @@ for(breadth in sort(unique(vaccineDF$vaccineImmuneBreadth))){
   multimodal.plots[[i]] = plot1
   i=i+1
 }
-plot = plot_grid(plotlist=multimodal.plots, align = 'h', ncol = 2)
+plot = wrap_plots(multimodal.plots, ncol = 2) +
 plotName = 'multimodal'
 save_plot(paste(plotName,'.pdf',sep=''), plot, ncol=2, nrow = 4, base_aspect_ratio = 1)
 

@@ -7,6 +7,7 @@ library(scales)
 library(viridis)
 library(plyr)
 library(cowplot)
+library(patchwork)
 
 textSize = 12
 pointSize = 1.0
@@ -32,7 +33,7 @@ plot_themes  = 	theme_classic() +
 
 single.plot = function(df, x, y, ylab, ylim, p.val){
   plot = ggplot(data = df, aes_string(x = x, y = y)) + 
-    xlab('Vaccination rate') +
+    xlab('Vaccination coverage') +
     ylab(ylab) +
     geom_line(aes(group = vaccineImmuneBreadth, colour = vaccineImmuneBreadth), size=0.4) +
     geom_point(aes_string(alpha = p.val, colour = 'vaccineImmuneBreadth'), size=0.3, show.legend = FALSE) +
@@ -52,7 +53,8 @@ makePlot = function(summaryDF, fluDF, plotName){
   plot3 = single.plot(df = fluDF, x='vaccinationRate', y='meanDrift', ylab = 'Cumulative antigenic evolution',ylim=c(17,29.5), p.val = 'drift.p') 
   plot4 = single.plot(df = fluDF, x='vaccinationRate', y='meanInc', ylab = 'Cumulative incidence',ylim=c(0.65,2.2), p.val = 'inc.p') 
   
-  plot = plot_grid(plot1, plot2, plot3, plot4, labels = c('A','B','C','D'), align = 'h', ncol = 2)
+  plot = (plot1+plot2)/(plot3+plot4) + plot_annotation(tag_levels = 'A')+ plot_layout(guides = "collect") & theme(legend.position = 'bottom')
+    #plot_grid(plot1, plot2, plot3, plot4, labels = c('A','B','C','D'), align = 'h', ncol = 2)
   print(plot)
   save_plot(paste(plotName,'.pdf',sep=''), plot, ncol=2, nrow = 2, base_aspect_ratio = 0.85)
 }
@@ -77,7 +79,6 @@ format.data = function(vaccineDF){
   vaccineDF = vaccineDF[vaccineDF$vaccineImmuneBreadth %in% c(1, 0.3,0.2, 0.1, 0.05,.5,.7),]
   
   vaccineDF$cumulativeIncidence = vaccineDF$cumulativeIncidence/50000000
-  vaccineDF$vaccinationRate = as.numeric(as.character(vaccineDF$vaccinationRate*365))
   return(vaccineDF)
 }
 

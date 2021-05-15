@@ -71,7 +71,7 @@ makeIncDensity = function(vaccineDF, nbreaks=41){
 makeDensityPlot = function(driftDens, incDens, plotName, meanDF, vaccineDF){
   
   plot1 = ggplot(data = driftDens, aes(x=vaccinationRate,y=cumulativeDrift)) + 
-    xlab('Vaccination rate') +
+    xlab('Vaccination coverage') +
     ylab('Cumulative antigenic evolution') +
     geom_tile(aes(fill=density)) + 
     stat_summary(data = vaccineDF, aes(y = cumulativeDrift),
@@ -97,7 +97,7 @@ makeDensityPlot = function(driftDens, incDens, plotName, meanDF, vaccineDF){
     plot_themes
   
   plot2 = ggplot(data = incDens, aes(x=vaccinationRate,y=cumulativeIncidence)) + 
-    xlab('Vaccination rate') +
+    xlab('Vaccination coverage') +
     ylab('Cumulative incidence') +
     geom_tile(aes(fill=density)) + 
     stat_summary(data = vaccineDF, aes(y = cumulativeIncidence),
@@ -139,7 +139,7 @@ makeDensityPlot = function(driftDens, incDens, plotName, meanDF, vaccineDF){
 }
 
 
-resultsDb = '../../analysis/lag_0_breadth_1_density/vaccine/results.sqlite'
+resultsDb = '../../analysis/lag_0_b1/vaccine/results.sqlite'
 comboDb = dbConnect(SQLite(), dbname = resultsDb)
 initExtension(comboDb)
 
@@ -149,8 +149,6 @@ baseLineFlux = vaccineDF$meanFluxRate[vaccineDF$vaccinationRate==0 & vaccineDF$f
 vaccineDF$cumulativeIncidence = vaccineDF$cumulativeIncidence/50000000
 
 vaccineDF$acceleration = vaccineDF$meanFluxRate - mean(baseLineFlux)
-
-vaccineDF$vaccinationRate = vaccineDF$vaccinationRate*365
 
 driftDens = makeDriftDensity(vaccineDF[vaccineDF$tmrcaLimit==0,])
 incDens = makeIncDensity(vaccineDF[vaccineDF$tmrcaLimit==0,])

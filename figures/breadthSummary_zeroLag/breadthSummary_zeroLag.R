@@ -7,6 +7,7 @@ library(scales)
 library(viridis)
 library(plyr)
 library(cowplot)
+library(patchwork)
 
 textSize = 12
 pointSize = 1.0
@@ -33,7 +34,7 @@ plot_themes  = 	theme_classic() +
 
 makePlot = function(summaryDF, fluDF, plotName){
 	plot1 = ggplot(data = summaryDF, aes(x=vaccinationRate,y=meanDrift)) + 
-				xlab('Vaccination rate') +
+				xlab('Vaccination coverage') +
 				ylab('Cumulative antigenic evolution') +
 	      geom_line(aes(colour = factor(vaccineImmuneBreadth)), size=0.5) +
 	  scale_color_viridis(discrete=TRUE) +
@@ -45,7 +46,7 @@ makePlot = function(summaryDF, fluDF, plotName){
 				plot_themes
 
 	plot2 = ggplot(data = summaryDF, aes(x=vaccinationRate,y=meanInc)) + 
-    	  xlab('Vaccination rate') +
+    	  xlab('Vaccination coverage') +
     	  ylab('Cumulative incidence') +
     	  geom_line(aes(colour = factor(vaccineImmuneBreadth)), size=0.5) +
 	  scale_color_viridis(discrete=TRUE) +
@@ -56,12 +57,12 @@ makePlot = function(summaryDF, fluDF, plotName){
 	      ylim(c(0,3)) +
     	  plot_themes
 
-	plot = plot_grid(plot1, plot2, labels = c('A','B'), align = 'h', ncol = 2)
+	plot = plot1+ plot2+ plot_annotation(tag_levels = 'A')+plot_layout(guides = "collect") & theme(legend.position = 'bottom')#plot_grid(plot1, plot2, labels = c('A','B'), align = 'h', ncol = 2)
 	print(plot)
-	save_plot(paste(plotName,'.pdf',sep=''), plot, ncol=2, nrow = 1, base_aspect_ratio = 0.85)
+	save_plot(paste(plotName,'.pdf',sep=''), plot, ncol=2, nrow = 1, base_aspect_ratio = 0.85, base_height=4)
 }
 
-resultsDirs = c('../../analysis/lag_0_breadth_1_density/vaccine/','../../analysis/lag_0_low_breadth_density/vaccine/')
+resultsDirs = c('../../analysis/lag_0_sweep_lowbreadth/vaccine/')
 
 for(dir in resultsDirs){
   resultsDb = paste(dir,'results.sqlite',sep='')
@@ -80,14 +81,11 @@ for(dir in resultsDirs){
 vaccineDF = rbind(vaccineDF, df2)
 
 vaccineDF = vaccineDF[vaccineDF$tmrcaLimit ==0,]
-vaccineDF = vaccineDF[vaccineDF$vaccineImmuneBreadth %in% c(1, 0.5, 0.1, 0.05),]
 
 baseLineFlux = vaccineDF$meanFluxRate[vaccineDF$vaccinationRate==0 & vaccineDF$fluLike==1]
 vaccineDF$cumulativeIncidence = vaccineDF$cumulativeIncidence/50000000
 
 vaccineDF$acceleration = vaccineDF$meanFluxRate - mean(baseLineFlux)
-
-vaccineDF$vaccinationRate = vaccineDF$vaccinationRate*365
 
 summaryDF = ddply(vaccineDF, .(vaccinationRate, vaccineImmuneBreadth), summarise,
                   meanDrift = mean(cumulativeDrift),

@@ -11,7 +11,9 @@ public class Phenotype {
 
 	// fields
 	private float traitA;
-	private float traitB;	
+	private float traitB;
+	private double abundance;
+	private double date;
 	
 	// constructor
 	public Phenotype() {
@@ -21,6 +23,12 @@ public class Phenotype {
 		traitA = (float)tA;
 		traitB = (float)tB;
 	}
+	
+//	public Phenotype(double tA, double tB, double ab) {
+//		traitA = (float)tA;
+//		traitB = (float)tB;
+//		abundance = (float)ab;
+//	}
 	
 	// mean constructor
 	public Phenotype(List<Phenotype> samples) {
@@ -42,12 +50,20 @@ public class Phenotype {
 		return new Phenotype(traitA + r * Math.cos(theta), traitB + r * Math.sin(theta));
 	}
 	
+	public double getDate(){
+		return date;
+	}
+	
 	public double getTraitA() {
 		return traitA;
 	}
 	public double getTraitB() {
 		return traitB;
 	}	
+	
+	public double getAbundance() {
+		return abundance;
+	}
 	
 	public void setTraitA(double tA) {
 		traitA = (float)tA;
@@ -68,7 +84,7 @@ public class Phenotype {
 	// cross immunity between a virus phenotype and a host's immune history
 	// here encoded more directly as risk of infection, which ranges from 0 to 1
 	public double riskOfInfection(
-			List<Phenotype> immuneHistory, List<Phenotype> vaccinationHistory,
+			List<Phenotype> immuneHistory, List<Phenotype> vaccinationHistory, double lastVaccineDate, double date,
 			double smithConversion, double homologousImmunity, double vaccineImmuneBreadth
 	) {
 	
@@ -107,12 +123,16 @@ public class Phenotype {
 					closestVacDistance = distance;
 				}
 			}
+
 			if(closestVacDistance != Double.POSITIVE_INFINITY) {
 				double vaccineRisk = closestVacDistance * smithConversion / vaccineImmuneBreadth;
 				vaccineRisk = Math.max(minRisk, vaccineRisk);
 				vaccineRisk = Math.min(1.0, vaccineRisk);
-				
+
 				risk = min(risk, vaccineRisk);
+//				if(closestVacDistance==0){
+//					System.err.println("ZERO: " + risk + " infect = " + Random.nextBoolean(risk) + " date = " + (date-lastVaccineDate));
+//				}
 			}
 		}
 		
@@ -161,5 +181,6 @@ public class Phenotype {
 		Phenotype gp = (Phenotype)o;
 		return gp.traitA == traitA && gp.traitB == traitB;
 	}
+	
 	
 }

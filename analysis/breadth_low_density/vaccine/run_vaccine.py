@@ -16,12 +16,13 @@ from collections import OrderedDict
 # Set DRY = False to actually submit jobs
 DRY = True
 
-maxJobs = 1000
-VACCINATIONRATES = np.linspace(0,0.2/365.0,41)[1:41]
-VACCINEIMMUNEBREADTHS = np.array([0.05,0.10,0.50])
-VACCINEIMMUNEBREADTHS = np.array([0.7,0.3,0.2])
-NUM_RUNS = 500
-totalJobs = NUM_RUNS*len(VACCINATIONRATES)*len(VACCINEIMMUNEBREADTHS)+NUM_RUNS
+maxJobs = 500
+#VACCINATIONRATES = np.linspace(0,0.5,41)
+VACCINATIONRATES = np.linspace(0,0.5,21)
+VACCINEIMMUNEBREADTHS = np.array([0.05, 0.1, 0.2, 0.3, 0.5 , 0.7])
+
+NUM_RUNS = 200
+totalJobs = NUM_RUNS*len(VACCINATIONRATES)*len(VACCINEIMMUNEBREADTHS)
 if totalJobs < maxJobs:
     maxJobs = totalJobs
 N_PER_JOB = totalJobs/maxJobs+1
@@ -35,48 +36,34 @@ beta = R0 * (nu+birthRate)
 meanStep = 0.6
 sdStep = 0.3
 
-vaccinate = [True]
+vaccinate = True
 
+#vaccineImmuneBreadth = 1
 vaccineLag = 300
 deployDay = vaccineLag
 vaccineWindow = 120
+vaccinateConstantFraction = True
+startAtEquilibriumInfected = True
+startAtEquilibriumImmune = True
 
 
-def generateJobs():    
-    jobNum = 60500
-    if jobNum == 0:
-        vaccinationRate = 0
+def generateJobs():
+    jobNum = 0
+    for vaccineImmuneBreadth in VACCINEIMMUNEBREADTHS:
+        for vaccinationRate in VACCINATIONRATES:
+    #         initialIs = (birthRate/beta * (R0 * (1-vaccinationRate) - 1 )) * totalN
+    #         initialIs = int(initialIs)
+    #         if initialIs < 0:
+    #             initialIs = 10
 
-        for runNum in range(NUM_RUNS):
-            # This is the name that SLURM uses to identify the job
-            jobName = jobNum
-            # This is the subdirectory inside 'results' used to run the job
-            jobSubdir = '{}'.format(jobName)
-
-            paramDict = OrderedDict([
-                ('vaccinationRate', [vaccinationRate]),
-                ('vaccineImmuneBreadth',1),
-                ('vaccineLag', vaccineLag),
-                ('vaccineWindow', vaccineWindow),
-                ('deployDay', deployDay),
-                ('meanStep',meanStep),
-                ('sdStep',sdStep),
-                ('R0',R0),
-                ('beta',beta)
-            ])
-            yield (jobName, jobSubdir, paramDict)
-            jobNum += 1
-
-    for vaccinationRate in VACCINATIONRATES:
-        for vaccineImmuneBreadth in VACCINEIMMUNEBREADTHS:
             for runNum in range(NUM_RUNS):
                 # This is the name that SLURM uses to identify the job
                 jobName = jobNum
-
                 # This is the subdirectory inside 'results' used to run the job
                 jobSubdir = '{}'.format(jobName)
 
                 paramDict = OrderedDict([
+                    ('vaccinate', vaccinate),
                     ('vaccinationRate', [vaccinationRate]),
                     ('vaccineImmuneBreadth',vaccineImmuneBreadth),
                     ('vaccineLag', vaccineLag),
@@ -85,7 +72,10 @@ def generateJobs():
                     ('meanStep',meanStep),
                     ('sdStep',sdStep),
                     ('R0',R0),
-                    ('beta',beta)
+                    ('beta',beta),
+                    ('vaccinateConstantFraction', vaccinateConstantFraction),
+                    ('startAtEquilibriumInfected', [startAtEquilibriumInfected]),
+                    ('startAtEquilibriumImmune', [startAtEquilibriumImmune])
                 ])
                 yield (jobName, jobSubdir, paramDict)
                 jobNum += 1
@@ -111,16 +101,16 @@ def submitJob(rootDir, sweepDir, resultsDir):
         '--array=0-{0}'.format(maxJobs-1),
         sbatchFilename
     ]
-    
+
     # Print command to terminal
     process = subprocess.Popen(['echo'] + submitCommand)
     process.wait()
-    
+
     # Construct environment variables
     env = dict(os.environ)
     env['ANTIGEN_ROOT'] = rootDir
     env['N_PER_JOB'] = str(N_PER_JOB)
-    
+
     # Actually run command
     if not DRY:
         process = subprocess.Popen(submitCommand, env=env)
@@ -137,15 +127,15 @@ if __name__ == '__main__':
     sweepDir = os.path.abspath(os.path.join(os.path.dirname(__file__)))
     rootDir = os.path.abspath(os.path.join(sweepDir, '..'))
     resultsDir = os.path.join(sweepDir, 'results')
-    
+
     cParamsFilename = os.path.join(sweepDir, 'vaccine_parameters.json')
     cParamsJson = loadUncommentedJsonString(cParamsFilename)
     cParamsDict = json.loads(cParamsJson, object_pairs_hook=OrderedDict)
-    
+
     for jobName, jobSubdir, paramDict in generateJobs():
         allParamsDict = OrderedDict()
         allParamsDict.update(cParamsDict)
         allParamsDict.update(paramDict)
         writeParameters(resultsDir, jobSubdir, allParamsDict)
-        
+
     submitJob(rootDir, sweepDir, resultsDir)

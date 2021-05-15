@@ -23,6 +23,7 @@ public class Parameters {
 	public Boolean reducedOutput;						// whether to output only out.summary and out.timeseries
 	public Double tmrcaLimit;
 	public Boolean printLongitudinal;
+	public Boolean getNetau; // whether to compute netau
 	
 	public Boolean[] startAtEquilibriumInfected;
 	public Boolean[] startAtEquilibriumImmune;
@@ -63,9 +64,9 @@ public class Parameters {
 	// parameters specific to GeometricPhenotype
 	public Double smithConversion;					// multiplier to distance to give cross-immunity
 	public Double homologousImmunity;				// immunity raised to antigenically identical virus
-	public Double initialTraitA;	
-	public Double meanStep; 
-	public Double sdStep; 
+	public Double initialTraitA;	// initial phenotype coordinate in one dimension (others are zero)
+	public Double meanStep; // mean mutation step size
+	public Double sdStep;  // sd mutation step size
 	public Boolean mut2D;						// whether to mutate in a full 360 degree arc
 	
 	// vaccination parameters
@@ -80,16 +81,19 @@ public class Parameters {
 	public Boolean synchronizeVaccination; // whether to synchronize vaccination for 4 months
 	public Double deployDay; //how many days between start of vaccine 'season'
 	public Double vaccineWindow; //how many days the vaccine 'season' lasts
+	public Boolean varyVaccinationRate; // whether to vary vaccination rates over time
+	public Double[] allVaccinationRates; // list of vaccination rates to vary over
+	public Boolean vaccinateConstantFraction; // whether to vaccinate the same constant fraction of the population; if true, then vaccinationRate is the fraction of the population that is vaccinated each year
+	public Double fractionRepeatVaccinations; // fraction of vaccines given to hosts in the candidate pool
+	public Double fractionNeverVaccinated; //fraction of hosts who will never get vaccinated
 	
-	// Periodic sampling of hosts into SQLite db
-	// TODO: not implemented
 	public Double sampleStep;
 	public Integer sampleHostsPerDeme;
-	public Boolean printHosts;
-	public Boolean useReferenceStrains;
-	public String referenceFile;
+	public Boolean useReferenceStrains; // whether to use static model
+	public String referenceFile; // which reference strains file to use if running static model
 	public Double strainSampleRate;
-	public Double writeSampleRateS;
-	public Double writeSampleRateI;
-	public Boolean writeReference;
+	public Double writeSampleRateS; // sample rates for writing reference files
+	public Double writeSampleRateI; 
+	public Boolean writeReference; // whether to write reference strains to sqlite for use as a reference for future static model
+	public Boolean trackVaccines; // whether to track vaccinees for calculating vaccine coverage
 }

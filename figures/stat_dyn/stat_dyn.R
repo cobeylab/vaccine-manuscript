@@ -63,10 +63,10 @@ makePlot = function(summaryDF, vaccineDF, plotName){
     #               #position = pd,
     #               alpha= .05
     #               ) +
-    xlab('Vaccination rate') +
+    xlab('Vaccination coverage') +
     ylab('Cumulative antigenic evolution') +
     #geom_smooth(data = vaccineDF, aes(colour = sim, y=cumulativeDrift), size=0.5) +
-    scale_color_brewer(palette='Dark2') +
+    scale_color_brewer(palette='Set1') +
     guides(colour= guide_legend('',title.position='top')) +
     #geom_smooth(data = fluDF, aes(colour=factor(sim), y=fluDrift), size=0.5, linetype = 'dashed', show_guide=FALSE) +
     theme(panel.border = element_rect(colour = "black", fill=NA, size=.2)) +
@@ -88,10 +88,10 @@ makePlot = function(summaryDF, vaccineDF, plotName){
     #               position = pd
     # ) +
     geom_point(aes(color = sim), size=.7) + 
-    xlab('Vaccination rate') +
+    xlab('Vaccination coverage') +
     ylab('Cumulative incidence') +
     #geom_smooth(data = vaccineDF, aes(colour = sim, y=cumulativeIncidence), size=0.5) +
-    scale_color_brewer(palette='Dark2') +
+    scale_color_brewer(palette='Set1') +
     #scale_color_viridis(discrete=TRUE, labels = c('All simulations', 'Surviving only')) +
     guides(color = guide_legend('',title.position='top', override.aes = list(colour='black', linetype=c('solid','dashed')))) +
     #geom_smooth(data = fluDF, aes(colour=factor(sim), y=fluInc), size=0.5, linetype = 'dashed',  show_guide=FALSE) +
@@ -126,8 +126,6 @@ baseLineFlux = vaccineDF$meanFluxRate[vaccineDF$vaccinationRate==0 & vaccineDF$f
 vaccineDF$cumulativeIncidence = vaccineDF$cumulativeIncidence/50000000
 
 vaccineDF$acceleration = vaccineDF$meanFluxRate - mean(baseLineFlux)
-
-vaccineDF$vaccinationRate = vaccineDF$vaccinationRate*365
 
 summaryDF = vaccineDF %>%
   group_by(vaccinationRate, vaccineImmuneBreadth, sim) %>%

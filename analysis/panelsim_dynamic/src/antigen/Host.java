@@ -213,11 +213,11 @@ public class Host {
 		}
 	}
 	
-	public void writeInfectedToSqliteByDay(int hostId, Simulation sim, SqlJetDb sampleDb){
+	public void writeVirusesToSqlite(String demeName, int hostId, Simulation sim, SqlJetDb sampleDb){
 		try {
 			sampleDb.beginTransaction(SqlJetTransactionMode.WRITE);
 			ISqlJetTable table = sampleDb.getTable("viruses");
-			table.insert(hostId, sim.getDay(), infection.getPhenotype().getTraitA(), infection.getPhenotype().getTraitB());
+			table.insert(hostId, sim.getDate(), infection.getPhenotype().getTraitA(), infection.getPhenotype().getTraitB());
 			sampleDb.commit();
 		}
 		catch(SqlJetException e) {
@@ -238,27 +238,28 @@ public class Host {
 		}
 	}
 	
-	public void writeHostsToSqlite(String demeName, int hostId, Simulation sim, SqlJetDb sampleDb) {
-		if(immuneHistory.size() > 0){
-			for (int i = 0; i < immuneHistory.size(); i++) {
+	public void writeHostsToSqlite(String demeName, int hostId, Simulation sim, SqlJetDb sampleDb, double S) {
+//		if(immuneHistory.size() > 0){
+//			for (int i = 0; i < immuneHistory.size(); i++) {
+//				try {
+//					sampleDb.beginTransaction(SqlJetTransactionMode.WRITE);
+//					ISqlJetTable table = sampleDb.getTable("hosts");
+//					table.insert(demeName, hostId, sim.getDay(), immuneHistory.get(i).getTraitA(),immuneHistory.get(i).getTraitB(),"S");
+//					sampleDb.commit();
+//				}
+//				catch(SqlJetException e) {
+//					throw new RuntimeException(e);
+//				}
+//			}
+//		}
+		List<Phenotype> vH = getVaccinationHistory(sim);
+		if(vH.size() > 0){
+			for(int i = vH.size() - 1; i >= 0; i--){
 				try {
 					sampleDb.beginTransaction(SqlJetTransactionMode.WRITE);
 					ISqlJetTable table = sampleDb.getTable("hosts");
-					table.insert(demeName, hostId, sim.getDay(), immuneHistory.get(i).getTraitA(),immuneHistory.get(i).getTraitB(),"S");
-					sampleDb.commit();
-				}
-				catch(SqlJetException e) {
-					throw new RuntimeException(e);
-				}
-			}
-		}
-		
-		if(vaccinationHistory != null){
-			for(int i : vaccinationHistory){
-				try {
-					sampleDb.beginTransaction(SqlJetTransactionMode.WRITE);
-					ISqlJetTable table = sampleDb.getTable("hosts");
-					table.insert(demeName, hostId, sim.getDate(), sim.getVaccine(i).getTraitA(),sim.getVaccine(i).getTraitB(),"V");
+					Phenotype v = vH.get(i);
+					table.insert(demeName, hostId, sim.getDate(), v.getTraitA(), v.getTraitB(),S);
 					sampleDb.commit();
 				}
 				catch(SqlJetException e) {
@@ -267,17 +268,17 @@ public class Host {
 			}
 		}
 
-		if(immuneHistory.size() == 0 & vaccinationHistory.cardinality() == 0){
-			try {
-				sampleDb.beginTransaction(SqlJetTransactionMode.WRITE);
-				ISqlJetTable table = sampleDb.getTable("hosts");
-				table.insert(demeName, hostId, sim.getDate(), null, null,"none");
-				sampleDb.commit();
-			}
-			catch(SqlJetException e) {
-				throw new RuntimeException(e);
-			}
-		}
+//		if(immuneHistory.size() == 0 & vaccinationHistory.cardinality() == 0){
+//			try {
+//				sampleDb.beginTransaction(SqlJetTransactionMode.WRITE);
+//				ISqlJetTable table = sampleDb.getTable("hosts");
+//				table.insert(demeName, hostId, sim.getDate(), null, null,"none");
+//				sampleDb.commit();
+//			}
+//			catch(SqlJetException e) {
+//				throw new RuntimeException(e);
+//			}
+//		}
 	}
 		
 	public String toString() {

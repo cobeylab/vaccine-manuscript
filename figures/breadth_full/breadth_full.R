@@ -71,20 +71,20 @@ makeIncDensity = function(vaccineDF, nbreaks=41){
 makeDensityPlot = function(driftDens, incDens, plotName, meanDF, vaccineDF){
   
   plot1 = ggplot(data = driftDens, aes(x=vaccinationRate,y=cumulativeDrift)) + 
-    xlab('Vaccination rate') +
+    xlab('Vaccination coverage') +
     ylab('Cumulative antigenic evolution') +
     geom_tile(aes(fill=density)) + 
     geom_point(data = vaccineDF, stat = 'summary',
                fun.y = 'mean',
-               color = 'white', size = .5) + 
+               color = 'white', size = 1) + 
     # stat_summary(data = vaccineDF, aes(y = cumulativeDrift),
     #              fun.data = "mean_cl_boot",
     #              geom = 'errorbar',
     #              size = .5,
     #              color = 'white') + 
-    geom_errorbar(data = vaccineDF, stat = 'summary',
-                  fun.ymin = percentile(.05),
-                  fun.ymax = percentile(.95),
+    stat_summary(data = vaccineDF, geom='errorbar',
+                  fun.min = percentile(.05),
+                  fun.max = percentile(.95),
                   width = 0,
                   color = 'white', size = .3) +
     scale_fill_viridis(option='plasma') +#, limits = c(0,1)) +
@@ -99,22 +99,22 @@ makeDensityPlot = function(driftDens, incDens, plotName, meanDF, vaccineDF){
     theme(plot.title = element_text(hjust=0))
   
   plot2 = ggplot(data = incDens, aes(x=vaccinationRate,y=cumulativeIncidence)) + 
-    xlab('Vaccination rate') +
+    xlab('Vaccination coverage') +
     ylab('Cumulative incidence') +
     geom_tile(aes(fill=density)) + 
     geom_point(data = vaccineDF, stat = 'summary',
                fun.y = 'mean',
-               color = 'white', size = .5) + 
+               color = 'white', size = 1) + 
     # stat_summary(data = vaccineDF, aes(y = cumulativeIncidence),
     #              fun.data = "mean_cl_boot",
     #              geom = 'errorbar',
     #              size = .5,
     #              color = 'white') + 
-    geom_errorbar(data = vaccineDF, stat = 'summary',
-                  fun.ymin = percentile(.05),
-                  fun.ymax = percentile(.95),
-                  width = 0,
-                  color = 'white', size = .3) +
+    stat_summary(data = vaccineDF, geom='errorbar',
+                 fun.min = percentile(.05),
+                 fun.max = percentile(.95),
+                 width = 0,
+                 color = 'white', size = .3) +
     scale_fill_viridis(option='plasma')+ #, limits = c(0,1)) +
     guides(fill=guide_colorbar(barwidth=11,barheight=0.5, title.position = 'top')) +
     scale_x_continuous(expand = c(0,0)) +
@@ -150,7 +150,7 @@ format.data = function(vaccineDF){
   vaccineDF = vaccineDF[vaccineDF$vaccineImmuneBreadth %in% c(1, 0.3,0.2, 0.1, 0.05,.5,.7),]
   
   vaccineDF$cumulativeIncidence = vaccineDF$cumulativeIncidence/50000000
-  vaccineDF$vaccinationRate = as.numeric(as.character(vaccineDF$vaccinationRate*365))
+  vaccineDF$vaccinationRate = as.numeric(as.character(vaccineDF$vaccinationRate))
   return(vaccineDF)
 }
 

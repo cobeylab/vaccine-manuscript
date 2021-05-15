@@ -28,7 +28,7 @@ format_VE = function(data){
   return(VEs)
 }
 
-dat = read_csv('linreg_or_032520.csv')
+dat = read_csv('or_forplot.csv') %>% select(-name)
 
 coefs_raw = dat[2*(1:(nrow(dat)/2))-1,]
 confint_raw = dat[2*(1:(nrow(dat)/2)),]
@@ -48,7 +48,7 @@ VE_forplot = merge(VEs,CIs) %>%
   select(-upperCI, -lowerCI) %>% 
   rename(upperCI = upperCI_tmp, lowerCI = lowerCI_tmp) %>%
   filter(breadth==1) %>%
-  mutate(rate = factor(rate, levels= c( '1%', '3%', '5%', '7%', '10%'))) %>%
+  mutate(rate = factor(rate, levels= c( '1%', '5%', '10%', '20%', '30%'))) %>%
   mutate(lower = ifelse(lowerCI < lowerbound, lowerbound, NA),
          label_location = ifelse(lowerCI<lowerbound, lowerbound+.1, NA),
          low_label = ifelse(lowerCI < lowerbound, round(lowerCI,2), NA),
@@ -59,15 +59,15 @@ pd = position_dodge(width=.5)
 privateplot = ggplot(VE_forplot %>% filter(benefit == 'Private'), aes(x=rate,y=VE, color = simtype)) + 
   geom_errorbar(aes(ymin = lowerCI, ymax=upperCI), width=.2, position=pd) +
   #geom_text(aes(y=label_location, label = low_label), color = 'black', position = position_dodge(width = 1), size = 3) +
-  geom_point(position = pd, size = .5)  + 
-  ylim(0,1) +
-  scale_color_brewer(palette = 'Dark2',name='Type') +
+  geom_point(position = pd, size = 1)  + 
+  ylim(-.05,1) +
+  scale_color_brewer(palette = 'Set1',name='Type') +
   # geom_segment(aes(xend=rate,y=0, yend=lowerCI, color=simtype, group = interaction(simtype, rate)),
   #   arrow = arrow(type='closed', angle=8, length = unit(0.2,'inches')), 
   #   position = pd, size=1, show.legend= FALSE) +
   coord_flip() +
   ylab("Private benefit (1 - Odds ratio)") + 
-  xlab("Annual vaccination rate") + plot_themes
+  xlab("Vaccination coverage") + plot_themes
 
 arrowdata = VE_forplot %>% 
   mutate(lower = lower-.05)%>%
@@ -86,12 +86,12 @@ privateplot = privateplot #+ arrows
 
 socialplot = ggplot(VE_forplot %>% filter(benefit == 'Social'), aes(x=rate,y=VE, color = simtype)) + 
   geom_errorbar(aes(ymin = lowerCI, ymax=upperCI), width=.2, position=pd) +
-  geom_point(position = pd, size=.5) + 
-  ylim(0,1) +
-  scale_color_brewer(palette = 'Dark2', name='Type') +
+  geom_point(position = pd, size=1) + 
+  ylim(-.05,1) +
+  scale_color_brewer(palette = 'Set1', name='Type') +
   coord_flip() +
   ylab("Social benefit (1 - Odds ratio)") + 
-  xlab("Annual vaccination rate") + plot_themes
+  xlab("Vaccination coverage") + plot_themes
 
 legend = get_legend(socialplot + theme(legend.position ='bottom'))
 outrow = plot_grid(socialplot + theme(legend.position = 'none'), 
@@ -99,5 +99,5 @@ outrow = plot_grid(socialplot + theme(legend.position = 'none'),
                    labels=c('A', 'B',''), nrow = 2)
 outplot = plot_grid(outrow, legend, ncol=1, rel_heights = c(1,.04))
 
-save_plot("VE.pdf", outplot, nrow=2, base_aspect_ratio = 1.8, base_height=2.9)
+save_plot("VE.pdf", outplot, nrow=2, base_aspect_ratio = 1.8, base_height=2.5)
 

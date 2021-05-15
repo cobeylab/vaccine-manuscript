@@ -1,6 +1,8 @@
 library(tidyverse)
 library(viridis)
 library(cowplot)
+library(vroom)
+library(Hmisc)
 
 textSize = 12
 plot_themes  =	theme_classic() +
@@ -21,7 +23,7 @@ WRITESAMPLERATEI = 1
 WRITESAMPLERATES = 1
 
 get_data = function(filename, simtype){
-  raw_data = read.csv(filename) 
+  raw_data = vroom(filename) 
   data = raw_data %>% mutate(I = ifelse(is.na(I), 0, I),
                              V = ifelse(is.na(V), 0, V))
   data = data %>% mutate(runId = paste0(runId,simtype)) %>%
@@ -60,8 +62,8 @@ summarize_data = function(data){
 }
 
 read_data = function(){
-  data_orig = rbind(get_data('subsampled_10percent/dynamic_10percent_breadth_1.csv','dynamic'), 
-                    get_data('subsampled_10percent/static_10percent_breadth_1.csv', 'static'))
+  data_orig = rbind(get_data('dynamic.csv','dynamic'), 
+                    get_data('static.csv', 'static'))
   
   return(data_orig)
 }
@@ -69,8 +71,8 @@ read_data = function(){
 data_orig = read_data()
 
 
-data = data_orig %>% filter(rate < .2) %>%
-  mutate(rate = factor(rate, levels= c(0, .01, .03, .05, .07, .1))) 
+data = data_orig %>%
+  mutate(rate = factor(rate, levels= c(0, .01, .05, .1, .2, .3))) 
 # data_summ = summarize_data(data) %>% 
 #   mutate(rate = factor(rate)) %>% 
 #   mutate(VE_arithmetic = ifelse(is.infinite(VE_arithmetic), 0, VE_arithmetic))
@@ -88,20 +90,20 @@ private = ggplot(plotdata,
                  aes(x=rate, y = VE, color = type)) +
   geom_point(position = pd) + 
   geom_errorbar(aes(ymin = lowerCI, ymax=upperCI), width=.2, position=pd)+
-  coord_flip() + ylim(-1,1) +
-  plot_themes + scale_color_brewer(palette = 'Dark2') + xlab("Vaccination rate") + ylab('Private benefit (1 - Odds ratio)')
+  coord_flip() + ylim(-.27,1) +
+  plot_themes + scale_color_brewer(palette = 'Set1') + xlab("Vaccine coverage") + ylab('Private benefit (1 - Odds ratio)')
 
 # private = ggplot(data_nozero, 
 #                  aes(x=rate, y = VE, color = type)) +
 #   stat_summary(fun.data=mean_cl_boot, position=pd) +
 #   coord_flip() + ylim(0,1) +
-#   plot_themes + scale_color_brewer(palette = 'Dark2') + xlab("Vaccination rate") + ylab('Private benefit (1 - Odds ratio)')
+#   plot_themes + scale_color_brewer(palette = 'Set1') + xlab("Vaccination rate") + ylab('Private benefit (1 - Odds ratio)')
 # 
 
 private_ARR = ggplot(data %>% filter(as.numeric(as.character(rate))> 0), aes(x=rate, y = ARR, color = type)) + 
   stat_summary(fun.data = 'mean_cl_boot', aes(color = type), position=position_dodge(width=.5)) +
   coord_flip()+
-  plot_themes + scale_color_brewer(palette = 'Dark2') + xlab("Vaccination rate") + ylab('Private benefit (ARR)')
+  plot_themes + scale_color_brewer(palette = 'Set1') + xlab("Vaccine coverage") + ylab('Private benefit (ARR)')
 
 
 socialdata = data %>% 
@@ -121,7 +123,7 @@ socialdata = socialdata %>%
 social_ARR = ggplot(socialdata %>% filter(rate != 0) %>% mutate(rate = factor(rate)), aes(x=rate, y = ARR, color = type)) + 
   stat_summary(fun.data = 'mean_cl_boot', aes(color = type), position=position_dodge(width=.5)) +
   coord_flip()+
-  plot_themes + scale_color_brewer(palette = 'Dark2') + xlab("Vaccination rate") + ylab('Social benefit (ARR)')
+  plot_themes + scale_color_brewer(palette = 'Set1') + xlab("Vaccine coverage") + ylab('Social benefit (ARR)')
 
 
 
@@ -135,14 +137,14 @@ plotdata=socialdata %>%
 # social = ggplot(socialdata %>% filter(rate != 0) %>% mutate(rate = factor(rate)), aes(x=rate, y = benefit, color = type)) + 
 #   stat_summary(fun.data = 'mean_cl_boot', aes(color = type), position=position_dodge(width=.5)) +
 #   coord_flip()+ ylim(0,1.5) +
-#   plot_themes + scale_color_brewer(palette = 'Dark2') + xlab("Vaccination rate") + ylab('Social benefit (1 - Odds ratio)')
+#   plot_themes + scale_color_brewer(palette = 'Set1') + xlab("Vaccination rate") + ylab('Social benefit (1 - Odds ratio)')
 # 
 
 social = ggplot(plotdata %>% filter(rate != 0) , aes(x=rate, y = benefit, color = type)) + 
   geom_point(position = pd) + 
   geom_errorbar(aes(ymin = lowerCI, ymax=upperCI), width=.2, position=pd)+
   coord_flip()+ ylim(-.1,1) +
-  plot_themes + scale_color_brewer(palette = 'Dark2') + xlab("Vaccination rate") + ylab('Social benefit (1 - Odds ratio)')
+  plot_themes + scale_color_brewer(palette = 'Set1') + xlab("Vaccine coverage") + ylab('Social benefit (1 - Odds ratio)')
 
 
 
@@ -152,8 +154,9 @@ outrow = plot_grid(social + theme(legend.position = 'none'),
                    labels=c('A', 'B',''), nrow = 2)
 outplot_OR = plot_grid(outrow, legend, ncol=1, rel_heights = c(1,.04))
 
-#outplot_OR = plot_grid(social, private, labels='AUTO', nrow = 2)
-outplot_ARR = plot_grid(social_ARR, private_ARR, labels='AUTO', nrow = 2)
+outplot_OR = plot_grid(social, private, labels='AUTO', nrow = 2)
+#outplot_ARR = plot_grid(social_ARR, private_ARR, labels='AUTO', nrow = 2)
 
-save_plot("VE_OR_fromincidence_021520.pdf", outplot_OR, nrow=2, base_aspect_ratio = 1.5)
+save_plot("VE_OR_fromincidence.pdf", outplot_OR, nrow=2, base_aspect_ratio = 1.5)
 #save_plot("VE_ARR_fromincidence_021420.pdf", outplot_ARR, nrow=2, base_aspect_ratio = 1.5)
+

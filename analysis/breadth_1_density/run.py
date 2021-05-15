@@ -25,7 +25,7 @@ if __name__ == '__main__':
 	args = [
 		'java',
 		'-ea',
-		'-Xmx24G',
+		'-Xmx44G',
 		'-XX:+UseSerialGC',
 		'-cp',
 		os.path.join(rootDir, 'lib', '*'),

@@ -259,6 +259,10 @@ public class Simulation {
 	public double getAntigenicDiversity() {
 		return antigenicDiversity;
 	}		
+	
+	public double getCurrentVaccinationRate(){
+		return demes.get(0).getVaccinationRate();
+	}
 		
 	// proportional to infecteds in each deme
 	public int getRandomDeme() {
@@ -355,23 +359,16 @@ public class Simulation {
 		}
 	
 	}
+
 	
 	public void printSampledHostPopulation() {
 		
-		try {
-			File hostFile = new File("out.hosts");
-			hostFile.delete();
-			hostFile.createNewFile();
-			PrintStream hostStream = new PrintStream(hostFile);
-			for (int i = 0; i < params.demeCount; i++) {
-				HostPopulation hp = demes.get(i);
-				hp.writeHostsToSqlite(sampleDb);
-			}
-			hostStream.close();
-		} catch(IOException ex) {
-			System.out.println("Could not write to file"); 
-			System.exit(0);
+		for (int i = 0; i < params.demeCount; i++) {
+			HostPopulation hp = demes.get(i);
+			hp.writeHostsToSqlite(sampleDb);
+			hp.writeVirusesToSqlite(sampleDb);
 		}
+
 	
 	}	
 	
@@ -441,7 +438,7 @@ public class Simulation {
 	
 	public void printState() {
 	
-		System.out.printf("%d\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%d\t%d\t%d\t%d\t%d\n", (int) day, getDiversity(), getTmrca(),  getNetau(), getSerialInterval(), getAntigenicDiversity(), getN(), getS(), getI(), getT(), getCases(), getUnexposed());
+		System.out.printf("%d\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%d\t%d\t%d\t%d\t%d\t%d\t%f\n", (int) day, getDiversity(), getTmrca(),  getNetau(), getSerialInterval(), getAntigenicDiversity(), getN(), getS(), getI(), getT(), getCases(), getUnexposed(), getCurrentVaccinationRate());
 
 		if (params.memoryProfiling && day % 10 == 0) {
 			long noBytes = MemoryUtil.deepMemoryUsageOf(this);
@@ -465,7 +462,7 @@ public class Simulation {
 	}
 
 	public void printHeader(PrintStream stream) {
-		stream.print("date\tdiversity\ttmrca\tnetau\tserialInterval\tantigenicDiversity\ttotalN\ttotalS\ttotalI\ttotalT\ttotalCases\ttotalUnexposed");
+		stream.print("date\tdiversity\ttmrca\tnetau\tserialInterval\tantigenicDiversity\ttotalN\ttotalS\ttotalI\ttotalT\ttotalCases\ttotalUnexposed\tcurrentVaccinationRate");
 		for (int i = 0; i < params.demeCount; i++) {
 			HostPopulation hp = demes.get(i);
 			hp.printHeader(stream);
@@ -474,7 +471,7 @@ public class Simulation {
 	}
 	
 	public void printState(PrintStream stream) {
-		stream.printf("%.4f\t%.4f\t%.4f\t%.4f\t%.5f\t%.4f\t%d\t%d\t%d\t%d\t%d\t%d", getDate(), getDiversity(), getTmrca(), getNetau(), getSerialInterval(), getAntigenicDiversity(), getN(), getS(), getI(), getT(), getCases(), getUnexposed());
+		stream.printf("%.4f\t%.4f\t%.4f\t%.4f\t%.5f\t%.4f\t%d\t%d\t%d\t%d\t%d\t%d\t%f", getDate(), getDiversity(), getTmrca(), getNetau(), getSerialInterval(), getAntigenicDiversity(), getN(), getS(), getI(), getT(), getCases(), getUnexposed(), getCurrentVaccinationRate());
 		for (int i = 0; i < params.demeCount; i++) {
 			HostPopulation hp = demes.get(i);
 			hp.printState(stream);
@@ -650,7 +647,19 @@ public class Simulation {
 			System.err.printf("Previously deployed vaccine : %s\n",deployedVaccine);
 			updateDeployedVaccine();
 			System.err.printf("Updated deployed vaccine : %s\n",deployedVaccine);
+//			for (int i = 0; i < params.demeCount; i++) {		
+//				HostPopulation hp = demes.get(i);
+//				hp.updateVaccinationRate();
+//			}
 		}
+		
+		if(day == 1515 & params.varyVaccinationRate){
+			for (int i = 0; i < params.demeCount; i++) {		
+				HostPopulation hp = demes.get(i);
+				hp.updateVaccinationRate();
+			}
+		}
+		
 		for (int i = 0; i < params.demeCount; i++) {		
 			HostPopulation hp = demes.get(i);
 			
@@ -715,7 +724,7 @@ public class Simulation {
 			seriesFile.delete();
 			seriesFile.createNewFile();
 			PrintStream seriesStream = new PrintStream(seriesFile);
-			System.out.println("day\tdiversity\ttmrca\tnetau\tserialInterval\tantigenicDiversity\tN\tS\tI\tT\tcases\tUnexposed");
+			System.out.println("day\tdiversity\ttmrca\tnetau\tserialInterval\tantigenicDiversity\tN\tS\tI\tT\tcases\tUnexposed\tvaccinationRate");
 			printHeader(seriesStream);
 			
 			// Vaccine time series
@@ -738,10 +747,15 @@ public class Simulation {
 			phenotypeOutStream.println("date\ttraitA\ttraitB\tfrequency");
 			
 			while (timestep <= endstep) {
-
+				
+				if(params.trackVaccines && timestep % updateVaccineEvery == 0){
+					printSampledHostPopulation();						
+				}
+				
 				if (day % (double) params.printStep < params.deltaT) {			
 					updateDiversity();
 					printState();
+					
 					if(params.printHosts && day > 0){
 						for (int i = 0; i < params.demeCount; i++) {		
 							HostPopulation hp = demes.get(i);
@@ -751,9 +765,9 @@ public class Simulation {
 				
 					if (day > params.burnin) {
 						printState(seriesStream);
-//						if(params.vaccinate && params.vaccinationRate[0] > 0 && day > params.deployDay) { // only print vaccines after first vaccinations happen
-//							printNVaccinations();
-//						}
+						if(params.vaccinate && params.vaccinationRate[0] > 0 && day > params.deployDay) { // only print vaccines after first vaccinations happen
+							printNVaccinations();
+						}
 						pushLists();
 					}
 					resetCases();
@@ -812,7 +826,6 @@ public class Simulation {
 			printLongitudinal();
 		}
 		// printHostPopulation();
-		// printSampledHostPopulation();
 		// printViruses();
 
 
@@ -875,8 +888,8 @@ public class Simulation {
 			sampleDb.open();
 			
 			sampleDb.beginTransaction(SqlJetTransactionMode.WRITE);
-			sampleDb.createTable("CREATE TABLE hosts (deme TEXT, hostId INTEGER, date REAL, ag1 REAL, ag2 REAL, infectionType TEXT);");
-			sampleDb.createTable("CREATE TABLE viruses (day REAL, ag1 REAL, ag2 REAL, freq REAL);");
+			sampleDb.createTable("CREATE TABLE hosts (deme TEXT, hostId INTEGER, date REAL, ag1 REAL, ag2 REAL, S);");
+			sampleDb.createTable("CREATE TABLE viruses (hostId INTEGER, date REAL, ag1 REAL, ag2 REAL);");
 			sampleDb.createTable("CREATE TABLE vaccines (vaccineId INTEGER, date REAL, actualA REAL, actualB REAL, idealA REAL, idealB REAL);");
 			//sampleDb.createTable("CREATE TABLE infections (hostId INTEGER, traitA REAL, traitB REAL);");
 			//sampleDb.createTable("CREATE TABLE immuneHistory (hostId INTEGER, traitA REAL, traitB REAL);");

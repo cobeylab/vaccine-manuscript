@@ -1,38 +1,33 @@
 library(RSQLite)
-library(ggplot2)
-library(sensitivity)
-library(gridExtra)
-library(grid)
-library(scales)
-library(viridis)
-library(plyr)
+library(tidyverse)
 library(cowplot)
+library(viridis)
 
 textSize = 12
 pointSize = 1.0
 lineSize = 1
 plotDirectory='./plots'
 plot_themes  = 	theme_classic() +
-				theme(axis.line = element_line(size=1)) +
-				theme(axis.ticks = element_line(size=0.5)) +
-				theme(axis.ticks.length = unit(-0.1,'cm')) +
-				theme(axis.title.x=element_text(size=textSize)) + 
-				theme(axis.text.x=element_text(size= textSize, margin=margin(5,5,5,5,'pt'))) + 
-				theme(axis.title.y=element_text(size= textSize)) +
-				theme(axis.text.y=element_text(size= textSize, margin=margin(5,5,5,5,'pt'))) +
-				theme(plot.title=element_text(size=textSize+2)) +
-				theme(plot.margin=unit(c(5,5,5,5),'mm')) +
-				theme(legend.title=element_text(size=textSize)) +
-				theme(legend.text=element_text(size=textSize)) +
-				theme(legend.position ='bottom') +
-				theme(legend.direction='horizontal') +
-				theme(legend.margin = unit(0,'cm')) +
-				theme(panel.border = element_rect(colour = "black", fill=NA, size=1)) +
-				theme(axis.line = element_blank())
+  theme(axis.line = element_line(size=1)) +
+  theme(axis.ticks = element_line(size=0.5)) +
+  theme(axis.ticks.length = unit(-0.1,'cm')) +
+  theme(axis.title.x=element_text(size=textSize)) + 
+  theme(axis.text.x=element_text(size= textSize, margin=margin(5,5,5,5,'pt'))) + 
+  theme(axis.title.y=element_text(size= textSize)) +
+  theme(axis.text.y=element_text(size= textSize, margin=margin(5,5,5,5,'pt'))) +
+  theme(plot.title=element_text(size=textSize+2)) +
+  theme(plot.margin=unit(c(5,5,5,5),'mm')) +
+  theme(legend.title=element_text(size=textSize)) +
+  theme(legend.text=element_text(size=textSize)) +
+  theme(legend.position ='bottom') +
+  theme(legend.direction='horizontal') +
+  theme(legend.margin = unit(0,'cm')) +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=1)) +
+  theme(axis.line = element_blank())
 
 status.plot = function(df, status, ylab){
   plot = ggplot(df, aes_string(x='vaccinationRate', y = status)) + 
-    xlab('Vaccination rate') +
+    xlab('Vaccination coverage') +
     ylab(ylab) +
     geom_line(aes(group = vaccineImmuneBreadth, colour = vaccineImmuneBreadth), size=0.4) +
     #geom_point(aes_string(alpha = p.val, colour = 'vaccineImmuneBreadth'), size=0.3, show.legend = FALSE) +
@@ -50,32 +45,32 @@ make.status.plot = function(statusDF, plotName){
   plot1 = status.plot(statusDF,'fluLike','Fraction influenza-like')
   plot2 = status.plot(statusDF,'extinct','Fraction extinct')
   plot3 = status.plot(statusDF,'excessDiv','Fraction TMRCA > 10 years')
-  plot = plot_grid(plot1, plot2, plot3, labels = c('A','B','C'), align = 'h', ncol = 3)
-=  save_plot(paste(plotName,'.pdf',sep=''), plot, ncol=3, nrow = 1, base_aspect_ratio = 0.85)
+  plot = plot1 + plot2 + plot3 + plot_annotation(tag_levels = 'A') + plot_layout(guides = "collect") & theme(legend.position = 'bottom')
+   # plot_grid(plot1, plot2, plot3, labels = c('A','B','C'), align = 'h', ncol = 3)
+  save_plot(paste(plotName,'.pdf',sep=''), plot, ncol=3, nrow = 1, base_aspect_ratio = 0.85)
+}
+
+get_data = function(filename){
+  comboDb = dbConnect(SQLite(), dbname = filename)
+  initExtension(comboDb)
+  vaccineDF = dbGetQuery(comboDb, 'SELECT * FROM pooled_results')
+  dbDisconnect(comboDb)
+  return(vaccineDF)
 }
 
 resultsDirs = c('../../analysis/breadth_1_density/vaccine/','../../analysis/breadth_low_density/vaccine/')
 
-for(dir in resultsDirs){
-  resultsDb = paste(dir,'results.sqlite',sep='')
-  comboDb = dbConnect(SQLite(), dbname = resultsDb)
-  initExtension(comboDb)
-  if(dir == resultsDirs[1]){
-    vaccineDF = dbGetQuery(comboDb, 'SELECT * FROM pooled_results')
-  }
-  else{
-    df2 = dbGetQuery(comboDb, 'SELECT * FROM pooled_results')
-  }
-}
 
-completeDF = rbind(vaccineDF, df2)
-completeDF = format.data(completeDF)
-vaccineDF = completeDF[completeDF$tmrcaLimit == 0,]
+vaccineDF = resultsDirs %>%
+  paste0(.,'results.sqlite') %>%
+  map_dfr(get_data)
 
-statusDF = ddply(completeDF, .(vaccinationRate,vaccineImmuneBreadth), summarise, 
-                    total = sum(tmrcaLimit, fluLike, extinct),
-                      excessDiv = sum(tmrcaLimit)/total, 
-                      fluLike= sum(fluLike)/total, 
-                      extinct = sum(extinct)/total)
+
+statusDF = vaccineDF %>% 
+  group_by(vaccinationRate, vaccineImmuneBreadth) %>%
+  dplyr::summarise(total = sum(tmrcaLimit, fluLike, extinct),
+            excessDiv = sum(tmrcaLimit)/total, 
+            fluLike= sum(fluLike)/total, 
+            extinct = sum(extinct)/total)
 make.status.plot(statusDF,'status')
 

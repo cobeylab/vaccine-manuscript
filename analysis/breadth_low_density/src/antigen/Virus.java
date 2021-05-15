@@ -106,6 +106,12 @@ public class Virus {
 		return getNumberOfChildren() == 0 ? true : false;
 	}
 	
+//	public Virus resetPhenotype(Phenotype p){
+//		Phenotype newP = new Phenotype(p.getTraitA(), p.getTraitB());
+//		Virus newV = new Virus(birth, this, deme, newP );
+//		return newV;
+//	}
+//	
 	// returns a mutated copy, original virus left intact
 	public Virus mutate(boolean mut2D, double meanStep, double sdStep, double birth) {
 	

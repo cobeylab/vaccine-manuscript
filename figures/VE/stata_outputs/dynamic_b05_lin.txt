@@ -1,17 +1,36 @@
---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------
       name:  <unnamed>
-       log:  /project2/cobey/frankwen/2020-03-14_statatest/dynamic_b5_lin.txt
+       log:  /scratch/midway2/frankwen/2021-04-19_dynamic_long_b05/vaccine/static_b05_lin.txt
   log type:  text
- opened on:  25 Mar 2020, 10:02:25
+ opened on:  19 Apr 2021, 18:17:33
 
 . 
-. import delimited widedata/dynamic_10p_b05_wide.csv
-(11 vars, 5,100,000 obs)
+. import delimited dynamic_b05_wide.csv
+(13 vars, 6,000,000 obs)
 
-. 
+. summarize
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+      hostid |  6,000,000     1499987    866028.4         15    2999987
+        time |  6,000,000        10.5    5.766282          1         20
+           i |  6,000,000    .0443227     .205811          0          1
+           v |  6,000,000    .0427735    .2023461          0          1
+          vr |  6,000,000          11    10.80124          0         30
+-------------+---------------------------------------------------------
+  extinctnow |  6,000,000    .2316667    .4218972          0          1
+       runid |  6,000,000        59.5    34.63982          0        119
+        vr_0 |  6,000,000    .1666667     .372678          0          1
+        vr_1 |  6,000,000    .1666667     .372678          0          1
+        vr_5 |  6,000,000    .1666667     .372678          0          1
+-------------+---------------------------------------------------------
+       vr_10 |  6,000,000    .1666667     .372678          0          1
+       vr_20 |  6,000,000    .1666667     .372678          0          1
+       vr_30 |  6,000,000    .1666667     .372678          0          1
+
 . xtset hostid time
        panel variable:  hostid (strongly balanced)
-        time variable:  time, 4 to 20
+        time variable:  time, 1 to 20
                 delta:  1 unit
 
 . 
@@ -28,94 +47,95 @@
 (4 missing values generated)
 
 . 
-. generate byte vvr01 = v * vr01
+. generate byte vvr_1 = v * vr_1
 
-. generate byte vvr03 = v * vr03
+. generate byte vvr_5 = v * vr_5
 
-. generate byte vvr05 = v * vr05
+. generate byte vvr_10 = v * vr_10
 
-. generate byte vvr07 = v * vr07
+. generate byte vvr_20 = v * vr_20
 
-. generate byte vvr10 = v * vr10
+. generate byte vvr_30= v * vr_30
 
 . 
-. generate byte lag1vr01 = lag1 * vr01
+. generate byte lag1vr_1 = lag1 * vr_1
 (1 missing value generated)
 
-. generate byte lag2vr01 = lag2 * vr01
+. generate byte lag2vr_1 = lag2 * vr_1
 (2 missing values generated)
 
-. generate byte lag3vr01 = lag3 * vr01
+. generate byte lag3vr_1 = lag3 * vr_1
 (3 missing values generated)
 
-. generate byte lag4vr01 = lag4 * vr01
+. generate byte lag4vr_1 = lag4 * vr_1
 (4 missing values generated)
 
 . 
-. generate byte lag1vr03 = lag1 * vr03
+. generate byte lag1vr_5 = lag1 * vr_5
 (1 missing value generated)
 
-. generate byte lag2vr03 = lag2 * vr03
+. generate byte lag2vr_5 = lag2 * vr_5
 (2 missing values generated)
 
-. generate byte lag3vr03 = lag3 * vr03
+. generate byte lag3vr_5 = lag3 * vr_5
 (3 missing values generated)
 
-. generate byte lag4vr03 = lag4 * vr03
+. generate byte lag4vr_5 = lag4 * vr_5
 (4 missing values generated)
 
 . 
-. generate byte lag1vr05 = lag1 * vr05
+. generate byte lag1vr_10 = lag1 * vr_10
 (1 missing value generated)
 
-. generate byte lag2vr05 = lag2 * vr05
+. generate byte lag2vr_10 = lag2 * vr_10
 (2 missing values generated)
 
-. generate byte lag3vr05 = lag3 * vr05
+. generate byte lag3vr_10 = lag3 * vr_10
 (3 missing values generated)
 
-. generate byte lag4vr05 = lag4 * vr05
+. generate byte lag4vr_10 = lag4 * vr_10
 (4 missing values generated)
 
 . 
-. generate byte lag1vr07 = lag1 * vr07
+. generate byte lag1vr_20 = lag1 * vr_20
 (1 missing value generated)
 
-. generate byte lag2vr07 = lag2 * vr07
+. generate byte lag2vr_20 = lag2 * vr_20
 (2 missing values generated)
 
-. generate byte lag3vr07 = lag3 * vr07
+. generate byte lag3vr_20 = lag3 * vr_20
 (3 missing values generated)
 
-. generate byte lag4vr07 = lag4 * vr07
+. generate byte lag4vr_20 = lag4 * vr_20
 (4 missing values generated)
 
 . 
-. generate byte lag1vr10 = lag1 * vr10
+. generate byte lag1vr_30 = lag1 * vr_30
 (1 missing value generated)
 
-. generate byte lag2vr10 = lag2 * vr10
+. generate byte lag2vr_30 = lag2 * vr_30
 (2 missing values generated)
 
-. generate byte lag3vr10 = lag3 * vr10
+. generate byte lag3vr_30 = lag3 * vr_30
 (3 missing values generated)
 
-. generate byte lag4vr10 = lag4 * vr10
+. generate byte lag4vr_30 = lag4 * vr_30
 (4 missing values generated)
 
 . 
-. xtreg i vr01 vr03 vr05 vr07 vr10 vvr01 vvr03 vvr05 vvr07 vvr10 lag1vr01 lag2vr01 lag3vr01 lag4vr01 lag1vr03 lag2vr03 lag3vr03 lag4vr03 lag1vr05 lag2vr05 lag3vr05 
-> lag4vr05 lag1vr07 lag2vr07 lag3vr07 lag4vr07 lag1vr10 lag2vr10 lag3vr10 lag4vr10, re vce(robust)
+. xtreg i vr_1 vr_5 vr_10 vr_20 vr_30 vvr_1 vvr_5 vvr_10 vvr_20 vvr_30 lag1vr_1 lag2vr_1 lag3vr_1 lag4vr_1 lag1vr_5 lag2vr_5 lag3vr_5 lag4v
+> r_5 lag1vr_10 lag2vr_10 lag3vr_10 lag4vr_10 lag1vr_20 lag2vr_20 lag3vr_20 lag4vr_20 lag1vr_30 lag2vr_30 lag3vr_30 lag4vr_30, re vce(robus
+> t)
 
-Random-effects GLS regression                   Number of obs     =  5,099,996
+Random-effects GLS regression                   Number of obs     =  5,999,996
 Group variable: hostid                          Number of groups  =    300,000
 
 R-sq:                                           Obs per group:
-     within  = 0.0003                                         min =         13
-     between = 0.2611                                         avg =       17.0
-     overall = 0.0168                                         max =         17
+     within  = 0.0001                                         min =         16
+     between = 0.2014                                         avg =       20.0
+     overall = 0.0102                                         max =         20
 
-                                                Wald chi2(30)     =  194379.51
+                                                Wald chi2(30)     =  115415.40
 corr(u_i, X)   = 0 (assumed)                    Prob > chi2       =     0.0000
 
                            (Std. Err. adjusted for 300,000 clusters in hostid)
@@ -123,40 +143,50 @@ corr(u_i, X)   = 0 (assumed)                    Prob > chi2       =     0.0000
              |               Robust
            i |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
 -------------+----------------------------------------------------------------
-        vr01 |   .0087533   .0003464    25.27   0.000     .0080744    .0094322
-        vr03 |   .0098097   .0003532    27.77   0.000     .0091174    .0105019
-        vr05 |  -.0307339   .0003689   -83.32   0.000    -.0314568   -.0300109
-        vr07 |  -.0444563   .0003735  -119.02   0.000    -.0451884   -.0437242
-        vr10 |  -.0727461   .0002769  -262.72   0.000    -.0732888   -.0722034
-       vvr01 |  -.0394943   .0024377   -16.20   0.000     -.044272   -.0347166
-       vvr03 |  -.0368179    .001487   -24.76   0.000    -.0397324   -.0339034
-       vvr05 |  -.0198293   .0009054   -21.90   0.000    -.0216039   -.0180547
-       vvr07 |  -.0135687   .0006861   -19.78   0.000    -.0149136   -.0122239
-       vvr10 |  -.0032039   .0003063   -10.46   0.000    -.0038043   -.0026036
-    lag1vr01 |  -.0128691   .0029691    -4.33   0.000    -.0186884   -.0070499
-    lag2vr01 |  -.0097189   .0030085    -3.23   0.001    -.0156155   -.0038223
-    lag3vr01 |   -.002635   .0031164    -0.85   0.398    -.0087431    .0034732
-    lag4vr01 |   .0016193    .003176     0.51   0.610    -.0046054    .0078441
-    lag1vr03 |  -.0211433   .0016601   -12.74   0.000    -.0243971   -.0178895
-    lag2vr03 |  -.0094901   .0017852    -5.32   0.000     -.012989   -.0059911
-    lag3vr03 |  -.0002018   .0018613    -0.11   0.914    -.0038498    .0034463
-    lag4vr03 |   .0017386   .0018736     0.93   0.353    -.0019336    .0054109
-    lag1vr05 |  -.0089909   .0010279    -8.75   0.000    -.0110055   -.0069762
-    lag2vr05 |  -.0035034   .0010799    -3.24   0.001    -.0056199   -.0013869
-    lag3vr05 |   .0010213    .001131     0.90   0.367    -.0011954     .003238
-    lag4vr05 |   .0025264   .0011489     2.20   0.028     .0002746    .0047781
-    lag1vr07 |  -.0059567   .0007608    -7.83   0.000    -.0074478   -.0044656
-    lag2vr07 |  -.0011911    .000815    -1.46   0.144    -.0027884    .0004062
-    lag3vr07 |    .000496   .0008257     0.60   0.548    -.0011224    .0021143
-    lag4vr07 |   .0006908    .000821     0.84   0.400    -.0009184    .0022999
-    lag1vr10 |  -.0011289   .0003454    -3.27   0.001    -.0018059   -.0004519
-    lag2vr10 |  -.0000991   .0003555    -0.28   0.781    -.0007958    .0005977
-    lag3vr10 |   .0005512   .0003683     1.50   0.135    -.0001707    .0012731
-    lag4vr10 |  -.0002085   .0003574    -0.58   0.560     -.000909    .0004921
-       _cons |   .0825294   .0002382   346.46   0.000     .0820625    .0829963
+        vr_1 |  -.0005399   .0002949    -1.83   0.067    -.0011179    .0000381
+        vr_5 |  -.0078335   .0002909   -26.93   0.000    -.0084036   -.0072633
+       vr_10 |  -.0089044   .0002971   -29.97   0.000    -.0094868    -.008322
+       vr_20 |  -.0428492   .0002559  -167.44   0.000    -.0433507   -.0423476
+       vr_30 |  -.0539237   .0002329  -231.49   0.000    -.0543803   -.0534672
+       vvr_1 |  -.0158738   .0035547    -4.47   0.000    -.0228409   -.0089067
+       vvr_5 |  -.0135391   .0016053    -8.43   0.000    -.0166855   -.0103927
+      vvr_10 |  -.0109276   .0011966    -9.13   0.000    -.0132729   -.0085822
+      vvr_20 |   .0049589    .000813     6.10   0.000     .0033656    .0065523
+      vvr_30 |   .0083985   .0006031    13.93   0.000     .0072165    .0095805
+    lag1vr_1 |  -.0088588   .0044801    -1.98   0.048    -.0176396    -.000078
+    lag2vr_1 |   .0042936   .0047533     0.90   0.366    -.0050227    .0136099
+    lag3vr_1 |  -.0006888   .0051727    -0.13   0.894    -.0108271    .0094496
+    lag4vr_1 |   .0008495   .0043667     0.19   0.846    -.0077091    .0094081
+    lag1vr_5 |  -.0042041   .0020549    -2.05   0.041    -.0082317   -.0001765
+    lag2vr_5 |  -.0011957   .0022544    -0.53   0.596    -.0056143    .0032229
+    lag3vr_5 |   .0031278    .002362     1.32   0.185    -.0015016    .0077571
+    lag4vr_5 |   .0019984   .0018998     1.05   0.293    -.0017253     .005722
+   lag1vr_10 |  -.0047204   .0015768    -2.99   0.003    -.0078109   -.0016299
+   lag2vr_10 |    .000883    .001642     0.54   0.591    -.0023352    .0041013
+   lag3vr_10 |    .004358    .001685     2.59   0.010     .0010554    .0076606
+   lag4vr_10 |  -.0003693   .0013537    -0.27   0.785    -.0030226    .0022839
+   lag1vr_20 |    .000793   .0009383     0.85   0.398     -.001046     .002632
+   lag2vr_20 |   .0016749    .000963     1.74   0.082    -.0002125    .0035623
+   lag3vr_20 |   .0014614   .0009558     1.53   0.126    -.0004119    .0033347
+   lag4vr_20 |   .0012659   .0007609     1.66   0.096    -.0002254    .0027572
+   lag1vr_30 |   .0011016   .0006701     1.64   0.100    -.0002118     .002415
+   lag2vr_30 |   .0019972   .0006625     3.01   0.003     .0006986    .0032957
+   lag3vr_30 |   .0033317   .0006944     4.80   0.000     .0019707    .0046926
+   lag4vr_30 |   .0032686   .0005817     5.62   0.000     .0021284    .0044087
+       _cons |   .0631763   .0002022   312.41   0.000     .0627799    .0635726
 -------------+----------------------------------------------------------------
      sigma_u |          0
-     sigma_e |  .23699145
+     sigma_e |   .2057895
          rho |          0   (fraction of variance due to u_i)
 ------------------------------------------------------------------------------
 
+. save static_b05.dta, replace
+(note: file static_b05.dta not found)
+file static_b05.dta saved
+
+. log close
+      name:  <unnamed>
+       log:  /scratch/midway2/frankwen/2021-04-19_dynamic_long_b05/vaccine/static_b05_lin.txt
+  log type:  text
+ closed on:  19 Apr 2021, 18:50:11
+-------------------------------------------------------------------------------------------------------------------------------------------
